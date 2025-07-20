@@ -307,10 +307,10 @@ class Conversation(containers.Vertical):
         self.throbber.set_class(busy > 0, "-busy")
 
     async def on_mount(self) -> None:
-        await self.post(Welcome(), anchor=False)
-        agent_response = AgentResponse()
-        await self.post(agent_response, anchor=True)
-        await agent_response.update(MD)
+        await self.post(Welcome(), anchor=True)
+        # agent_response = AgentResponse()
+        # await self.post(agent_response, anchor=True)
+        # await agent_response.update(MD)
         self.screen.can_focus = False
 
     async def on_click(self, event: events.Click) -> None:
@@ -354,16 +354,23 @@ class Conversation(containers.Vertical):
         return self._blocks
 
     def action_cursor_up(self) -> None:
-        if self.block_cursor < 0:
-            self.block_cursor = len(self.blocks) - 1
-        else:
-            self.block_cursor -= 1
+        blocks = self.blocks
+        if blocks:
+            if self.block_cursor == 0:
+                pass
+            elif self.block_cursor == -1:
+                self.block_cursor = len(blocks) - 1
+            else:
+                self.block_cursor -= 1
 
     def action_cursor_down(self) -> None:
+        blocks = self.blocks
+        if not blocks:
+            return
         if self.block_cursor == -1:
-            self.block_cursor = len(self.blocks) - 1
+            self.block_cursor = len(blocks) - 1
         else:
-            if self.block_cursor < len(self.blocks) - 1:
+            if self.block_cursor < len(blocks) - 1:
                 self.block_cursor += 1
             else:
                 self.block_cursor = -1
@@ -413,4 +420,4 @@ class Conversation(containers.Vertical):
             block = blocks[block_cursor]
             self.cursor.follow(block)
             self.contents.release_anchor()
-            self.contents.scroll_to_center(blocks[block_cursor], immediate=True)
+            self.contents.scroll_to_center(block, immediate=True)
