@@ -11,9 +11,9 @@ I am working quite fast, and chances are I am aware of most of the issues.
 
 ## Talk about Toad!
 
-Please **do** talk about Toad.
-You may your thoughts on social media, in addition to screenshots, and videos.
-In fact, I'm happy if you do that.
+Please **do** talk about Toad!
+Generating a buzz ahead of the first open release will be very benefitial.
+You may share your thoughts on social media, in addition to screenshots, and videos.
 But please only talk about features that have been implemented--I would like to keep some things under-wraps until the first public release.
 Understood that is a big vague.
 Feel free to ask if there is any doubt.
