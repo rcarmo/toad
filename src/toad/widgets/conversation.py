@@ -543,6 +543,8 @@ class Conversation(containers.Vertical):
     def on_click(self, event: events.Click) -> None:
         widget = event.widget
         contents = self.contents
+        if self.screen.get_selected_text():
+            return
         if widget is None:
             return
         if widget in contents.children:
