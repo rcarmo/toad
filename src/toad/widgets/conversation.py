@@ -13,7 +13,7 @@ from textual import events
 from textual.binding import Binding
 from textual.widget import Widget
 from textual.widgets import Static
-from textual.widgets._markdown import MarkdownBlock, MarkdownFence
+from textual.widgets.markdown import MarkdownBlock, MarkdownFence
 from textual.geometry import Offset
 from textual.reactive import var, Initialize
 from textual.layouts.grid import GridLayout
@@ -409,7 +409,6 @@ class Conversation(containers.Vertical):
 
     def compose(self) -> ComposeResult:
         yield Throbber(id="throbber")
-
         with Window():
             with ContentsGrid():
                 with containers.VerticalGroup(id="cursor-container"):

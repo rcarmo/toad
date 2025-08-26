@@ -117,6 +117,10 @@ class PathSearch(containers.VerticalGroup):
         if event.option:
             self.post_message(PromptSuggestion(event.option.id))
 
+    @on(OptionList.OptionSelected)
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
+        self.action_submit()
+
     def action_submit(self):
         if highlighted := self.option_list.highlighted:
             option = self.option_list.options[highlighted]
@@ -138,6 +142,7 @@ class PathSearch(containers.VerticalGroup):
 
         self.loading = True
         paths = await directory.scan(root, exclude_dirs=[".*", "__*__"])
+        paths = [path.absolute() for path in paths]
         paths.sort(key=lambda path: (len(path.parts), str(path)))
         self.root = root
         self.paths = paths
@@ -156,7 +161,12 @@ class PathSearch(containers.VerticalGroup):
         return content
 
     def watch_paths(self, paths: list[Path]) -> None:
-        self.highlighted_paths = [self.highlight_path(str(path)) for path in paths]
+        self.option_list.highlighted = None
+        cwd = Path("~/").expanduser().resolve()
+
+        self.highlighted_paths = [
+            self.highlight_path(str(path.relative_to(cwd))) for path in paths
+        ]
         self.option_list.set_options(
             [
                 Option(highlighted_path, id=highlighted_path.plain)

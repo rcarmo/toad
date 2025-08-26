@@ -371,7 +371,25 @@ MainScreen {
     
     # align: center top;
     background: $background;
+
+    DirectoryTree {
+        display: None;
+   
+        background: transparent;
+        width: auto;
+        max-width: 45%;
+        dock: left;
+        padding: 1;
+    }
+    &.-show-tree {
+        DirectoryTree {
+            display: block;
+        }
+    }
+
 }
+
+
 
 Version {
     layer: float;
