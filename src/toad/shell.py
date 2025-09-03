@@ -80,10 +80,9 @@ class Shell:
         env["TTY_COMPATIBLE"] = "1"
         env["TERM"] = "xterm-256color"
         env["COLORTERM"] = "truecolor"
-        env["TOAD"] = "1"
-
-        shell = f"{self.shell} +o interactive"
-        # shell = self.shell
+        env["TOAD"] = "1"        
+        # shell = f"{self.shell} +o interactive"
+        shell = self.shell
 
         process = await asyncio.create_subprocess_shell(
             shell,
@@ -110,6 +109,7 @@ class Shell:
             os.fdopen(os.dup(master), "wb", 0),
         )
         self.writer = write_transport
+        self.writer.write(b'set +x\nPS1="";\n')
 
         current_directory = ""
         unicode_decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
