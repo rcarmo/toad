@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 from pathlib import Path
-from typing import Callable
 
 from logging import getLogger
 
@@ -19,7 +18,15 @@ PROTOCOL_VERSION = 1
 
 
 class Agent(AgentBase):
+    """An agent that speaks the APC (https://agentclientprotocol.com/overview/introduction) protocol."""
+
     def __init__(self, project_root: Path, command: str) -> None:
+        """
+
+        Args:
+            project_root: Project root path.
+            command: Command to launch agent.
+        """
         super().__init__(project_root)
         self.command = command
         self._agent_task: asyncio.Task | None = None
@@ -41,34 +48,43 @@ class Agent(AgentBase):
         self.server.expose_instance(self)
 
     def start(self) -> None:
-        self._agent_task = asyncio.create_task(self.run_agent())
+        """Start the agent."""
+        self._agent_task = asyncio.create_task(self._run_agent())
 
     def send(self, request: jsonrpc.Request) -> None:
-        if self._process is None:
-            raise RuntimeError("No process")
-        stdin = self._process.stdin
-        print("SEND")
-        print(request.body)
-        if stdin is not None:
+        """Send a request to the agent.
+
+        This is called automatically, if you go through `self.request`.
+
+        Args:
+            request: JSONRPC request object.
+
+        """
+        assert self._process is not None, "Process should be present here"
+
+        if (stdin := self._process.stdin) is not None:
             stdin.write(b"%s\n" % request.body_json)
 
     def request(self) -> jsonrpc.Request:
+        """Create a request object."""
         return API.request(self.send)
 
     @jsonrpc.expose()
     def greet(self, name: str) -> str:
-        print("Called greet!")
         return f"Hello, {name}!"
 
     @jsonrpc.expose("update", prefix="session/")
     def rpc_session_update(self, sessionId: str, update: protocol.SessionUpdate):
-        print("SESSION UPDATE", sessionId)
-        print("UPDATE:")
+        """Agent requests an update.
+
+        https://agentclientprotocol.com/protocol/schema
+        """
         print(update)
 
-    async def run_agent(self) -> None:
-        PIPE = asyncio.subprocess.PIPE
+    async def _run_agent(self) -> None:
+        """Task to communicate with the agent subprocess."""
 
+        PIPE = asyncio.subprocess.PIPE
         process = self._process = await asyncio.create_subprocess_shell(
             self.command,
             stdin=PIPE,
@@ -108,22 +124,29 @@ class Agent(AgentBase):
         print("exit")
 
     async def run(self) -> None:
-        # result = await self.server.call(
-        #     {"jsonrpc": "2.0", "method": "greet", "params": {"name": "Will"}, "id": 0}
-        # )
-        # print(result)
-        print("run")
+        """The main logic of the Agent."""
+        # Boilerplate to initialize comms
         await self.acp_initialize()
+        # Create a new session
         await self.acp_new_session()
         await self.send_prompt("Hello")
 
     async def send_prompt(self, prompt: str) -> None:
+        """Send a prompt to the agent.
+
+        !!! note
+            This method blocks as it may defer to a thread to read resources.
+
+        Args:
+            prompt: Prompt text.
+        """
         prompt_content_blocks = await asyncio.to_thread(
             build_prompt, self.project_root_path, prompt
         )
         await self.acp_session_prompt(prompt_content_blocks)
 
     async def acp_initialize(self):
+        """Initialize agent."""
         with self.request():
             initialize_response = api.initialize(
                 PROTOCOL_VERSION,
@@ -131,17 +154,23 @@ class Agent(AgentBase):
                     "fs": {
                         "readTextFile": True,
                         "writeTextFile": True,
-                    },
-                    "terminal": False,
+                    }
                 },
             )
         response = await initialize_response.wait()
-        self.agent_capabilities = response["agentCapabilities"]
-        self.auth_methods = response["authMethods"]
+        # Store agents capabilities
+        if agent_capabilities := response.get("agentCapabilities"):
+            self.agent_capabilities = agent_capabilities
+        if auth_methods := response.get("authMethods"):
+            self.auth_methods = auth_methods
 
     async def acp_new_session(self) -> None:
+        """Create a new session."""
         with self.request():
-            session_new_response = api.session_new(str(self.project_root_path), [])
+            session_new_response = api.session_new(
+                str(self.project_root_path),
+                [],
+            )
         response = await session_new_response.wait()
         self.session_id = response["sessionId"]
 

@@ -1,68 +1,77 @@
 from typing import TypedDict, Required, Literal
 
 
+class SchemaDict(TypedDict, total=False):
+    pass
+
+
+class FileSystemCapability(SchemaDict, total=False):
+    readTextFile: bool
+    writeTextFile: bool
+
+
 # https://agentclientprotocol.com/protocol/schema#clientcapabilities
-class ClientCapabilities(TypedDict, total=False):
-    fs: Required[dict[str, bool]]
-    terminal: bool
+class ClientCapabilities(SchemaDict, total=False):
+    fs: FileSystemCapability
+    # terminal: bool
 
 
 # https://agentclientprotocol.com/protocol/schema#promptcapabilities
-class PromptCapabilities(TypedDict):
+class PromptCapabilities(SchemaDict, total=False):
     audio: bool
     embeddedContent: bool
     image: bool
 
 
 # https://agentclientprotocol.com/protocol/schema#agentcapabilities
-class AgentCapabilities(TypedDict):
+class AgentCapabilities(SchemaDict, total=False):
     loadSession: bool
     promptCapabilities: PromptCapabilities
 
 
-class AuthMethod(TypedDict, total=False):
+class AuthMethod(SchemaDict, total=False):
     description: str | None
     id: Required[str]
     name: Required[str]
 
 
-class InitializeResponse(TypedDict):
+class InitializeResponse(SchemaDict, total=False):
     agentCapabilities: AgentCapabilities
     authMethods: list[AuthMethod]
     protocolVersion: Required[int]
 
 
-class EnvVariable(TypedDict):
+class EnvVariable(SchemaDict, total=False):
     name: str
     value: str
 
 
 # https://agentclientprotocol.com/protocol/schema#mcpserver
-class McpServer(TypedDict):
+class McpServer(SchemaDict, total=False):
     args: list[str]
     command: str
     env: list[EnvVariable]
     name: str
 
 
-class NewSessionResponse(TypedDict):
-    sessionId: str
+class NewSessionResponse(SchemaDict, total=False):
+    sessionId: Required[str]
 
 
 # https://modelcontextprotocol.io/specification/2025-06-18/server/resources#annotations
-class Annotations(TypedDict):
+class Annotations(SchemaDict, total=False):
     audience: list[str]
     priority: float
     lastModified: str
 
 
-class TextContent(TypedDict, total=False):
+class TextContent(SchemaDict, total=False):
     type: Required[str]
     text: Required[str]
     annotations: Annotations
 
 
-class ImageContent(TypedDict, total=False):
+class ImageContent(SchemaDict, total=False):
     type: Required[str]
     data: Required[str]
     mimeType: Required[str]
@@ -70,32 +79,32 @@ class ImageContent(TypedDict, total=False):
     annotations: Annotations
 
 
-class AudioContent(TypedDict, total=False):
+class AudioContent(SchemaDict, total=False):
     type: Required[str]
     data: Required[str]
     mimeType: Required[str]
     Annotations: Annotations
 
 
-class EmbeddedResourceText(TypedDict, total=False):
+class EmbeddedResourceText(SchemaDict, total=False):
     uri: Required[str]
     text: Required[str]
     mimeType: str
 
 
-class EmbeddedResourceBlob(TypedDict, total=False):
+class EmbeddedResourceBlob(SchemaDict, total=False):
     uri: Required[str]
     blob: Required[str]
     mimeType: str
 
 
 # https://agentclientprotocol.com/protocol/content#embedded-resource
-class EmbeddedResourceContent(TypedDict, total=False):
+class EmbeddedResourceContent(SchemaDict, total=False):
     type: Required[str]
     resource: EmbeddedResourceText | EmbeddedResourceBlob
 
 
-class ResourceLinkContent(TypedDict, total=False):
+class ResourceLinkContent(SchemaDict, total=False):
     annotations: Annotations | None
     description: str | None
     mimeType: str | None
@@ -115,36 +124,37 @@ type ContentBlock = (
 )
 
 
-class UserMessageChunk(TypedDict):
-    content: ContentBlock
-    sessionUpdate: str
+# https://agentclientprotocol.com/protocol/schema#param-user-message-chunk
+class UserMessageChunk(SchemaDict, total=False):
+    content: Required[ContentBlock]
+    sessionUpdate: Required[str]
 
 
-class AgentMessageChunk(TypedDict):
-    content: ContentBlock
-    sessionUpdate: str
+class AgentMessageChunk(SchemaDict, total=False):
+    content: Required[ContentBlock]
+    sessionUpdate: Required[str]
 
 
-class AgentThoughtChunk(TypedDict):
-    content: ContentBlock
-    sessionUpdate: str
+class AgentThoughtChunk(SchemaDict, total=False):
+    content: Required[ContentBlock]
+    sessionUpdate: Required[str]
 
 
-class ToolCallContentContent(TypedDict):
-    content: ContentBlock
-    type: str
+class ToolCallContentContent(SchemaDict, total=False):
+    content: Required[ContentBlock]
+    type: Required[str]
 
 
-class ToolCallContentDiff(TypedDict, total=False):
+class ToolCallContentDiff(SchemaDict, total=False):
     newText: Required[str]
     oldText: str
     path: Required[str]
     type: Required[str]
 
 
-class ToolCallContentTerminal(TypedDict, total=False):
-    terminalId: str
-    type: str
+class ToolCallContentTerminal(SchemaDict, total=False):
+    terminalId: Required[str]
+    type: Required[str]
 
 
 # https://agentclientprotocol.com/protocol/schema#toolcallcontent
@@ -169,7 +179,7 @@ type ToolKind = Literal[
 type ToolCallStatus = Literal["pending", "in_progress", "completed", "failed"]
 
 
-class ToolCallLocation(TypedDict, total=False):
+class ToolCallLocation(SchemaDict, total=False):
     line: int | None
     path: Required[str]
 
@@ -177,7 +187,7 @@ class ToolCallLocation(TypedDict, total=False):
 type ToolCallId = str
 
 
-class ToolCall(TypedDict):
+class ToolCall(SchemaDict, total=False):
     content: list[ToolCallContent]
     kind: ToolKind
     locations: list[ToolCallLocation]
@@ -186,10 +196,10 @@ class ToolCall(TypedDict):
     sessionUpdate: Required[str]
     status: ToolCallStatus
     title: str
-    toolCallId: ToolCallId
+    toolCallId: Required[ToolCallId]
 
 
-class ToolCallUpdate(TypedDict, total=False):
+class ToolCallUpdate(SchemaDict, total=False):
     content: list | None
     kind: ToolKind | None
     locations: list | None
@@ -201,34 +211,34 @@ class ToolCallUpdate(TypedDict, total=False):
     toolCallId: ToolCallId
 
 
-class PlanEntry(TypedDict, total=False):
+class PlanEntry(SchemaDict, total=False):
     content: Required[str]
     priority: Literal["high", "medium", "low"]
     status: Literal["pending", "in_progress", "completed"]
 
 
 # https://agentclientprotocol.com/protocol/schema#param-plan
-class Plan(TypedDict, total=False):
+class Plan(SchemaDict, total=False):
     entries: Required[list[PlanEntry]]
     sessionUpdate: str
 
 
-class AvailableCommandInput(TypedDict, total=False):
+class AvailableCommandInput(SchemaDict, total=False):
     hint: Required[str]
 
 
-class AvailableCommand(TypedDict, total=False):
+class AvailableCommand(SchemaDict, total=False):
     description: Required[str]
     input: AvailableCommandInput | None
     name: Required[str]
 
 
-class AvailableCommandsUpdate(TypedDict, total=False):
+class AvailableCommandsUpdate(SchemaDict, total=False):
     availableCommands: Required[list[AvailableCommand]]
     sessionUpdate: Required[str]
 
 
-class CurrentModeUpdate(TypedDict, total=False):
+class CurrentModeUpdate(SchemaDict, total=False):
     currentModeId: Required[str]
     sessionUpdate: Required[str]
 
@@ -245,6 +255,6 @@ type SessionUpdate = (
 )
 
 
-class SessionNotification(TypedDict):
+class SessionNotification(TypedDict, total=False):
     sessionId: str
     update: SessionUpdate
