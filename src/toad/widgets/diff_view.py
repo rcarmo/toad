@@ -51,7 +51,7 @@ class GroupHeading(Static):
         width: auto;
         text-opacity: 0.7;
         text-align: left;
-        border-top: blank $foreground 30%;
+        margin-top: 1;
         padding-left: 1;
         
     }
@@ -205,8 +205,15 @@ class DiffView(containers.VerticalGroup):
     DiffView {
         width: 1fr;
         height: auto;
+        &:dark {
+            background: black 20%;
+        }   
+        &:dark {
+            background: $boost;
+        }       
         .diff-group {
             height: auto;
+            background: $foreground 4%;
            
            
            
@@ -368,14 +375,13 @@ class DiffView(containers.VerticalGroup):
                     ),
                 )
             )
+            line_numbers_a: list[int | None] = []
+            line_numbers_b: list[int | None] = []
+            annotations_a: list[str] = []
+            annotations_b: list[str] = []
+            code_lines_a: list[Content | None] = []
+            code_lines_b: list[Content | None] = []
             for tag, i1, i2, j1, j2 in group:
-                line_numbers_a: list[int | None] = []
-                line_numbers_b: list[int | None] = []
-                annotations_a: list[str] = []
-                annotations_b: list[str] = []
-                code_lines_a: list[Content | None] = []
-                code_lines_b: list[Content | None] = []
-
                 if tag == "equal":
                     for line_offset, line in enumerate(lines_a[i1:i2], 1):
                         annotations_a.append(" ")
@@ -399,104 +405,96 @@ class DiffView(containers.VerticalGroup):
                     fill_lists(annotations_a, annotations_b, "/")
                     fill_lists(line_numbers_a, line_numbers_b, None)
 
-                if line_numbers_a or line_numbers_b:
-                    line_number_width = max(
-                        len("" if line_no is None else str(line_no))
-                        for line_no in (line_numbers_a + line_numbers_b)
-                    )
-                else:
-                    line_number_width = 1
+            if line_numbers_a or line_numbers_b:
+                line_number_width = max(
+                    len("" if line_no is None else str(line_no))
+                    for line_no in (line_numbers_a + line_numbers_b)
+                )
+            else:
+                line_number_width = 1
 
-                hatch = Content.styled("╱" * (2 + line_number_width), "$foreground 20%")
-                annotation_hatch = Content.styled("╱" * 3, "$foreground 20%")
-                annotation_blank = Content(" " * 3)
+            hatch = Content.styled("╱" * (2 + line_number_width), "$foreground 20%")
+            annotation_hatch = Content.styled("╱" * 3, "$foreground 20%")
+            annotation_blank = Content(" " * 3)
 
-                with containers.HorizontalGroup(classes="diff-group"):
-                    yield LineAnnotations(
-                        [
-                            (
-                                hatch
-                                if line_no is None
-                                else Content(
-                                    f" {line_no:>{line_number_width}} "
-                                ).stylize(self.NUMBER_STYLES[annotation])
-                            )
-                            for line_no, annotation in zip(
-                                line_numbers_a, annotations_a
-                            )
-                        ]
-                    )
-                    yield LineAnnotations(
-                        [
-                            (
-                                Content(f" {annotation} ")
-                                .stylize(self.LINE_STYLES[annotation])
-                                .stylize("bold")
-                                if annotation == "-"
-                                else (
-                                    annotation_hatch
-                                    if annotation == "/"
-                                    else annotation_blank
-                                )
-                            )
-                            for annotation in annotations_a
-                        ]
-                    )
-
-                    code_line_styles = [
-                        self.LINE_STYLES[annotation] for annotation in annotations_a
-                    ]
-                    with DiffScrollContainer() as scroll_container_a:
-                        yield DiffCode(
-                            LineContent(
-                                code_lines_a, code_line_styles, width=line_width
+            with containers.HorizontalGroup(classes="diff-group"):
+                yield LineAnnotations(
+                    [
+                        (
+                            hatch
+                            if line_no is None
+                            else Content(f" {line_no:>{line_number_width}} ").stylize(
+                                self.NUMBER_STYLES[annotation]
                             )
                         )
-
-                    yield LineAnnotations(
-                        [
-                            (
-                                hatch
-                                if line_no is None
-                                else Content(
-                                    f" {line_no:>{line_number_width}} "
-                                ).stylize(self.NUMBER_STYLES[annotation])
-                            )
-                            for line_no, annotation in zip(
-                                line_numbers_b, annotations_b
-                            )
-                        ]
-                    )
-
-                    yield LineAnnotations(
-                        [
-                            (
-                                Content(f" {annotation} ")
-                                .stylize(self.LINE_STYLES[annotation])
-                                .stylize("bold")
-                                if annotation == "+"
-                                else (
-                                    annotation_hatch
-                                    if annotation == "/"
-                                    else annotation_blank
-                                )
-                            )
-                            for annotation in annotations_b
-                        ]
-                    )
-
-                    code_line_styles = [
-                        self.LINE_STYLES[annotation] for annotation in annotations_b
+                        for line_no, annotation in zip(line_numbers_a, annotations_a)
                     ]
-                    with DiffScrollContainer() as scroll_container_b:
-                        yield DiffCode(
-                            LineContent(
-                                code_lines_b, code_line_styles, width=line_width
+                )
+                yield LineAnnotations(
+                    [
+                        (
+                            Content(f" {annotation} ")
+                            .stylize(self.LINE_STYLES[annotation])
+                            .stylize("bold")
+                            if annotation == "-"
+                            else (
+                                annotation_hatch
+                                if annotation == "/"
+                                else annotation_blank
                             )
                         )
+                        for annotation in annotations_a
+                    ]
+                )
 
-                    scroll_container_a.scroll_link = scroll_container_b
-                    scroll_container_b.scroll_link = scroll_container_a
+                code_line_styles = [
+                    self.LINE_STYLES[annotation] for annotation in annotations_a
+                ]
+                with DiffScrollContainer() as scroll_container_a:
+                    yield DiffCode(
+                        LineContent(code_lines_a, code_line_styles, width=line_width)
+                    )
+
+                yield LineAnnotations(
+                    [
+                        (
+                            hatch
+                            if line_no is None
+                            else Content(f" {line_no:>{line_number_width}} ").stylize(
+                                self.NUMBER_STYLES[annotation]
+                            )
+                        )
+                        for line_no, annotation in zip(line_numbers_b, annotations_b)
+                    ]
+                )
+
+                yield LineAnnotations(
+                    [
+                        (
+                            Content(f" {annotation} ")
+                            .stylize(self.LINE_STYLES[annotation])
+                            .stylize("bold")
+                            if annotation == "+"
+                            else (
+                                annotation_hatch
+                                if annotation == "/"
+                                else annotation_blank
+                            )
+                        )
+                        for annotation in annotations_b
+                    ]
+                )
+
+                code_line_styles = [
+                    self.LINE_STYLES[annotation] for annotation in annotations_b
+                ]
+                with DiffScrollContainer() as scroll_container_b:
+                    yield DiffCode(
+                        LineContent(code_lines_b, code_line_styles, width=line_width)
+                    )
+
+                scroll_container_a.scroll_link = scroll_container_b
+                scroll_container_b.scroll_link = scroll_container_a
 
 
 if __name__ == "__main__":
