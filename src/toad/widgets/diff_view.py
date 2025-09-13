@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import difflib
 
+from rich.segment import Segment
+from rich.style import Style as RichStyle
+
 from textual.app import ComposeResult
 from textual.content import Content
 from textual.geometry import Size
@@ -73,16 +76,40 @@ class LineContent(Visual):
         self, width: int, height: int | None, style: Style, options: RenderOptions
     ) -> list[Strip]:
         strips: list[Strip] = []
-        for line, color in zip(self.code_lines, self.line_styles):
+        y = 0
+        selection = options.selection
+        selection_style = options.selection_style or Style.null()
+        for y, (line, color) in enumerate(zip(self.code_lines, self.line_styles)):
             if line is None:
-                line = Content.styled("╱" * width, "$foreground 20%")
+                line = Content.styled("╱" * width, "$foreground 15%")
             else:
+                if selection is not None:
+                    if span := selection.get_span(y):
+                        start, end = span
+                        if end == -1:
+                            end = len(line)
+                        line = line.stylize(selection_style, start, end)
                 if line.cell_length < width:
                     line = line.extend_right(width - line.cell_length)
+
             line = line.stylize_before(color).stylize_before(style)
 
             # TODO: rich_style_with_offsets needed to make content selectable
-            strips.append(Strip(line.render_segments(), line.cell_length))
+
+            x = 0
+            meta = {"offset": (0, 0)}
+            segments = []
+            for text, rich_style, _ in line.render_segments():
+                meta["offset"] = (x, y)
+                if rich_style is not None:
+                    segments.append(
+                        Segment(text, rich_style + RichStyle.from_meta(meta))
+                    )
+                else:
+                    segments.append(Segment(text, rich_style))
+                x += len(text)
+
+            strips.append(Strip(segments, line.cell_length))
         return strips
 
     def get_optimal_width(self, rules: RulesMap, container_width: int) -> int:
