@@ -135,6 +135,8 @@ class Agent(AgentBase):
     async def _run_agent(self) -> None:
         """Task to communicate with the agent subprocess."""
 
+        agent_output = open("agent.jsonl", "wb")
+
         PIPE = asyncio.subprocess.PIPE
         process = self._process = await asyncio.create_subprocess_shell(
             self.command,
@@ -163,8 +165,10 @@ class Agent(AgentBase):
             # This line should contain JSON, which may be:
             #   A) a JSONRPC request
             #   B) a JSONRPC response to a previous request
+            agent_output.writelines([line])
             try:
                 agent_data = json.loads(line.decode("utf-8"))
+
                 print("IN", agent_data)
             except Exception:
                 # TODO: handle this

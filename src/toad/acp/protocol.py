@@ -275,3 +275,16 @@ type SessionUpdate = (
 class SessionNotification(TypedDict, total=False):
     sessionId: str
     update: SessionUpdate
+
+
+type PermissionOptionKind = Literal[
+    "allow_once", "allow_always", "reject_once", "reject_always"
+]
+type PermissionOptionId = str
+
+
+class PermissionOption(TypedDict, total=False):
+    _meta: dict
+    kind: Required[PermissionOptionKind]
+    name: Required[str]
+    optionId: Required[PermissionOptionId]
