@@ -17,7 +17,7 @@ PermissionsScreen {
         height: 1fr;        
         background: $background;        
         # border: thick black 30%;
-        margin: 1 2;    
+        margin: 1 ;    
         padding: 0 0;           
     }
 
@@ -31,14 +31,15 @@ PermissionsScreen {
         width: auto;
         height: 1fr;
         min-width: 20;
-        margin-bottom: 1;
+        # margin-bottom: 1;
     }
     Question {        
         width: 1fr;
         border: tall black 10%;
-        
+        background: black 10%;
         dock: bottom;
         height: auto;
+        margin-top: 1;
         
         &:focus {
             border: tall $primary;    
@@ -52,6 +53,16 @@ PermissionsScreen {
         border: tall black 10%;
         &:focus {
             border: tall $primary;
+        }
+    }
+    #nav-container {
+        width: auto;
+        height: 1fr;
+        
+        Select {
+            width: auto;
+            height: auto;
+            expand: optimal;
         }
     }
 }

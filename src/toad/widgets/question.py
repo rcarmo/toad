@@ -81,14 +81,23 @@ class Option(containers.HorizontalGroup):
 
     selected: reactive[bool] = reactive(False, toggle_class="-selected")
 
-    def __init__(self, index: int, content: Content, classes: str = "") -> None:
+    def __init__(
+        self, index: int, content: Content, key: str | None, classes: str = ""
+    ) -> None:
         super().__init__(classes=classes)
         self.index = index
         self.content = content
+        self.key = key
 
     def compose(self) -> ComposeResult:
+        key = self.key
         yield NonSelectableLabel("❯", id="caret")
-        yield NonSelectableLabel(f"{self.index + 1}.", id="index")
+        # yield NonSelectableLabel(Content.styled(f"▌{key}▐", "r b dim"), id="index")
+        if key:
+            yield NonSelectableLabel(Content.styled(f"{key}", "b"), id="index")
+        else:
+            yield NonSelectableLabel(Content(" "), id="index")
+
         yield NonSelectableLabel(self.content, id="label")
 
     def on_click(self, event: events.Click) -> None:
@@ -99,11 +108,52 @@ class Option(containers.HorizontalGroup):
 class Question(Widget, can_focus=True):
     """A text question with a menu of responses."""
 
-    CURSOR_GROUP = Binding.Group("Cursor")
+    ALLOW_SELECT = False
+    CURSOR_GROUP = Binding.Group("Cursor", compact=True)
+    ALLOW_GROUP = Binding.Group("Allow once/always", compact=True)
+    REJECT_GROUP = Binding.Group("Reject once/always", compact=True)
     BINDINGS = [
-        Binding("up", "selection_up", "Up", group=CURSOR_GROUP),
-        Binding("down", "selection_down", "Down", group=CURSOR_GROUP),
-        Binding("enter", "select", "Select"),
+        Binding(
+            "up",
+            "selection_up",
+            "Up",
+            group=CURSOR_GROUP,
+        ),
+        Binding(
+            "down",
+            "selection_down",
+            "Down",
+            group=CURSOR_GROUP,
+        ),
+        Binding(
+            "enter",
+            "select",
+            "Select",
+        ),
+        Binding(
+            "a",
+            "select_kind('allow_once')",
+            "Allow once",
+            group=ALLOW_GROUP,
+        ),
+        Binding(
+            "A",
+            "select_kind('allow_always')",
+            "Allow always",
+            group=ALLOW_GROUP,
+        ),
+        Binding(
+            "r",
+            "select_kind('reject_once')",
+            "Reject once",
+            group=REJECT_GROUP,
+        ),
+        Binding(
+            "R",
+            "select_kind('reject_always')",
+            "Reject always",
+            group=REJECT_GROUP,
+        ),
     ]
 
     DEFAULT_CSS = """
@@ -119,6 +169,14 @@ class Question(Widget, can_focus=True):
         &.-blink Option.-active #caret {
             opacity: 0.2;
         }
+        &:blur {
+            #index {
+                opacity: 0.3;
+            }
+            #caret {
+                opacity: 0.3;
+            }
+        }
     }
     """
 
@@ -128,6 +186,13 @@ class Question(Widget, can_focus=True):
     selection: reactive[int] = reactive(0, init=False)
     selected: var[bool] = var(False, toggle_class="-selected")
     blink: var[bool] = var(False)
+
+    DEFAULT_KINDS = {
+        "allow_once": "a",
+        "allow_always": "A",
+        "reject_once": "r",
+        "reject_always": "R",
+    }
 
     @dataclass
     class Answer(Message):
@@ -174,10 +239,13 @@ class Question(Widget, can_focus=True):
             if self.question:
                 yield Label(self.question, id="prompt")
             with containers.VerticalGroup(id="option-container"):
-                for index, (option_text, _option_id) in enumerate(self.options):
+                for index, answer in enumerate(self.options):
                     active = index == self.selection
                     yield Option(
-                        index, Content(option_text), classes="-active" if active else ""
+                        index,
+                        Content(answer.text),
+                        self.DEFAULT_KINDS.get(str(answer.kind)),
+                        classes="-active" if active else "",
                     ).data_bind(Question.selected)
 
     def watch_selection(self, old_selection: int, new_selection: int) -> None:
@@ -189,6 +257,12 @@ class Question(Widget, can_focus=True):
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         if self.selected and action in ("selection_up", "selection_down"):
+            return False
+        kinds = {answer.kind for answer in self.options}
+        if (
+            action in {"allow_once", "allow_always", "reject_once", "reject_always"}
+            and parameters[0] not in kinds
+        ):
             return False
         return True
 
@@ -213,6 +287,13 @@ class Question(Widget, can_focus=True):
         )
         self.selected = True
 
+    def action_select_kind(self, kind: str) -> None:
+        for index, answer in enumerate(self.options):
+            if answer.kind == kind:
+                self.selection = index
+                self.action_select()
+                break
+
     @on(Option.Selected)
     def on_option_selected(self, event: Option.Selected) -> None:
         event.stop()
@@ -226,8 +307,8 @@ if __name__ == "__main__":
     from textual.widgets import Footer
 
     OPTIONS = [
-        Answer("Yes, allow once", "proceed_always"),
-        Answer("Yes, allow always", "allow_always"),
+        Answer("Yes, allow once", "proceed_always", kind="allow_once"),
+        Answer("Yes, allow always", "allow_always", kind="allow_always"),
         Answer("Modify with external editor", "modify"),
         Answer("No, suggest changes (esc)", "reject"),
     ]
