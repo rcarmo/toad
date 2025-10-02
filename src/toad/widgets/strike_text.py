@@ -26,9 +26,10 @@ class StrikeText(Widget):
     def render(self) -> Content:
         content = self.content
         if self.strike_time is not None:
-            position = int((monotonic() - self.strike_time) * 80)
+            position = int((monotonic() - self.strike_time) * 100)
             content = content.stylize("strike", 0, position)
-
+            if position > len(content):
+                self.auto_refresh = None
         return content
 
 

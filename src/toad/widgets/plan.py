@@ -6,6 +6,7 @@ from textual.reactive import reactive
 from textual import containers
 from textual.widgets import Static
 
+from toad.pill import pill
 from toad.widgets.strike_text import StrikeText
 
 
@@ -44,7 +45,7 @@ class Plan(containers.Grid):
         .plan {
             # color: $text-primary;
         }
-        .status-completed {
+        .status.status-completed {
             # text-style: strike;
             color: $text-success;
         }
@@ -71,21 +72,9 @@ class Plan(containers.Grid):
     LEFT = Content.styled("▌", "$error-muted on transparent r")
 
     PRIORITIES = {
-        "high": Content.assemble(
-            ("▌", "$error-muted on transparent r"),
-            ("H", "$text-error on $error-muted"),
-            ("▐", "$error-muted on transparent r"),
-        ),
-        "medium": Content.assemble(
-            ("▌", "$warning-muted on transparent r"),
-            ("M", "$text-warning on $warning-muted"),
-            ("▐", "$warning-muted on transparent r"),
-        ),
-        "low": Content.assemble(
-            ("▌", "$primary-muted on transparent r"),
-            ("L", "$text-primary on $primary-muted"),
-            ("▐", "$primary-muted on transparent r"),
-        ),
+        "high": pill("H", "$error-muted", "$text-error"),
+        "medium": pill("M", "$warning-muted", "$text-warning"),
+        "low": pill("L", "$primary-muted", "$text-primary"),
     }
 
     def __init__(
