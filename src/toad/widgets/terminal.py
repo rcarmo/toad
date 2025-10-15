@@ -10,7 +10,6 @@ import shlex
 from collections import deque
 from dataclasses import dataclass
 import struct
-import sys
 import termios
 from typing import Mapping
 
@@ -35,7 +34,8 @@ class Command:
     """Current working directory."""
 
     def __str__(self) -> str:
-        return shlex.join([self.command, *self.args])
+        command_str = shlex.join([self.command, *self.args]).strip("'")
+        return command_str
 
 
 @dataclass
@@ -205,7 +205,6 @@ class Terminal(ANSILog):
 
         shell = os.environ.get("SHELL", "sh")
         run_command = shlex.join([shell, "-c", run_command])
-        print("RUN", run_command)
 
         try:
             process = self._process = await asyncio.create_subprocess_shell(
@@ -259,17 +258,15 @@ class Terminal(ANSILog):
         finally:
             transport.close()
 
-        print(self, "waiting for process")
         return_code = self._return_code = await process.wait()
-        print("Process returned")
-        print("return code", return_code)
+
         if return_code == 0:
-            print("SUCCESS")
             self.add_class("-success")
         else:
-            print("FAIL")
             self.add_class("-error")
-            self.border_title = f"[{return_code}] {command}"
+            self.border_title = Content.assemble(
+                f"{command} [{return_code}]",
+            )
 
     def _record_output(self, data: bytes) -> None:
         """Keep a record of the bytes left.

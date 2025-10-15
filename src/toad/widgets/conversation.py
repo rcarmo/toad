@@ -632,7 +632,7 @@ class Conversation(containers.Vertical):
         self.app.settings_changed_signal.subscribe(self, self._settings_changed)
         self.call_after_refresh(self.start_shell)
 
-        if self.app.acp_command is not None:
+        if self.app.acp_command:
 
             def start_agent():
                 from toad.acp.agent import Agent
@@ -642,6 +642,9 @@ class Conversation(containers.Vertical):
                 self.agent.start(self)
 
             self.call_after_refresh(start_agent)
+
+        else:
+            self.agent_ready = True
 
     @work
     async def start_shell(self) -> None:
@@ -696,7 +699,6 @@ class Conversation(containers.Vertical):
     def watch_agent(self, agent: AgentBase | None) -> None:
         if agent is None:
             self.agent_info = Content.styled("shell")
-            self.agent_ready = True
         else:
             self.agent_info = agent.get_info()
             self.agent_ready = False

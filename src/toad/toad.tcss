@@ -216,13 +216,16 @@ Conversation {
     Terminal {
         height: auto;   
         border: panel $text-secondary 90%;          
-        padding: 0 1 0 1;        
+        padding: 1 1 0 1;        
+        # margin: 1 1 1 0;
         &.-success {
             border: panel $text-success 90%;              
         }
         &.-error {
             border: panel $error-muted;              
             border-title-color: $text-error;
+            border-subtitle-align: right;
+            border-subtitle-style: bold;
         }             
     }
          
@@ -277,9 +280,9 @@ Prompt {
         }
     }
 
-    &.-not-ready {
-        opacity: 0.5;
-    }
+    # &.-not-ready {
+    #     opacity: 0.5;
+    # }
 
     PathSearch {
         display: none;

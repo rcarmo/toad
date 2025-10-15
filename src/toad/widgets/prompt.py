@@ -59,6 +59,7 @@ class PromptTextArea(HighlightedTextArea):
     auto_completes: var[list[Option]] = var(list)
     multi_line = var(False, bindings=True)
     shell_mode = var(False)
+    agent_ready: var[bool] = var(False)
 
     class Submitted(Message):
         def __init__(self, markdown: str) -> None:
@@ -105,6 +106,12 @@ class PromptTextArea(HighlightedTextArea):
         return True
 
     def action_multiline_submit(self) -> None:
+        if not self.agent_ready:
+            self.app.bell()
+            self.notify(
+                "Agent is not ready. Please wait...", title="Agent", severity="warning"
+            )
+            return
         self.post_message(UserInputSubmitted(self.text, self.shell_mode))
         self.clear()
 
@@ -112,6 +119,12 @@ class PromptTextArea(HighlightedTextArea):
         self.insert("\n")
 
     def action_submit(self) -> None:
+        if not self.agent_ready:
+            self.app.bell()
+            self.notify(
+                "Agent is not ready. Please wait...", title="Agent", severity="warning"
+            )
+            return
         if self.suggestion:
             self.insert(self.suggestion + " ")
             self.suggestion = ""
@@ -210,9 +223,15 @@ class Prompt(containers.VerticalGroup):
 
     def watch_agent_ready(self, ready: bool) -> None:
         self.set_class(not ready, "-not-ready")
+        if ready:
+            self.prompt_text_area.focus()
+            self.query_one(AgentInfo).update(self.agent_info)
 
     def watch_agent_info(self, agent_info: Content) -> None:
-        self.query_one(AgentInfo).update(agent_info)
+        if self.agent_ready:
+            self.query_one(AgentInfo).update(agent_info)
+        else:
+            self.query_one(AgentInfo).update("initializing…")
 
     def watch_multiline(self) -> None:
         self.update_prompt()
@@ -243,6 +262,7 @@ class Prompt(containers.VerticalGroup):
                 layout=False,
             )
             self.remove_class("-shell-mode")
+
             self.prompt_text_area.placeholder = Content.assemble(
                 "What would you like to do?\t".expandtabs(8),
                 ("▌!▐", "r"),
@@ -469,6 +489,7 @@ class Prompt(containers.VerticalGroup):
                     auto_completes=Prompt.auto_completes,
                     multi_line=Prompt.multi_line,
                     shell_mode=Prompt.shell_mode,
+                    agent_ready=Prompt.agent_ready,
                 )
 
         with containers.HorizontalGroup(id="info-container"):
