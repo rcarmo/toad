@@ -246,7 +246,7 @@ class Prompt(containers.VerticalGroup):
     project_path = var(Path())
     working_directory = var("")
     agent_info = var(Content(""))
-    ask: var[Ask | None] = var(None)
+    _ask: var[Ask | None] = var(None)
     plan: var[list[Plan.Entry]]
     agent_ready: var[bool] = var(False)
     current_mode: var[Mode | None] = var(None)
@@ -266,6 +266,7 @@ class Prompt(containers.VerticalGroup):
         disabled: bool = False,
     ):
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
+        self.ask_queue: list[Ask] = []
 
     @property
     def text(self) -> str:
@@ -285,6 +286,11 @@ class Prompt(containers.VerticalGroup):
         self.auto_complete.display = show
         if not show:
             self.prompt_text_area.suggestion = ""
+
+    def ask(self, ask: Ask) -> None:
+        self.ask_queue.append(ask)
+        if self._ask is None:
+            self._ask = self.ask_queue.pop(0)
 
     @on(events.Click, "ModeInfo")
     def on_click(self):
@@ -353,7 +359,7 @@ class Prompt(containers.VerticalGroup):
             "-working-directory-out-of-bounds",
         )
 
-    def watch_ask(self, ask: Ask | None) -> None:
+    def watch__ask(self, ask: Ask | None) -> None:
         self.set_class(ask is not None, "-mode-ask")
         if ask is None:
             self.prompt_text_area.focus()
@@ -409,7 +415,7 @@ class Prompt(containers.VerticalGroup):
         return self.shell_mode or self.likely_shell
 
     def focus(self, scroll_visible: bool = True) -> Self:
-        if self.ask is not None:
+        if self._ask is not None:
             self.question.focus()
         else:
             self.query(HighlightedTextArea).focus()
@@ -530,12 +536,15 @@ class Prompt(containers.VerticalGroup):
 
         def remove_question() -> None:
             """Remove the question and restore the text prompt."""
-            self.ask = None
+            if self.ask_queue:
+                self._ask = self.ask_queue.pop(0)
+            else:
+                self._ask = None
 
-        if self.ask is not None and (callback := self.ask.callback) is not None:
+        if self._ask is not None and (callback := self._ask.callback) is not None:
             callback(event.answer)
 
-        self.set_timer(0.4, remove_question)
+        self.set_timer(0.3, remove_question)
 
     def suggest(self, suggestion: str) -> None:
         if suggestion.startswith(self.text) and self.text != suggestion:

@@ -200,9 +200,7 @@ class Agent(AgentBase):
         Returns:
             The response to the permission request.
         """
-        print("rp_request_permission")
         result_future: asyncio.Future[Answer] = asyncio.Future()
-        # kind = toolCall.get("kind", None)
         tool_call_id = toolCall["toolCallId"]
         if tool_call_id not in self.tool_calls:
             permission_tool_call = toolCall.copy()
@@ -212,7 +210,6 @@ class Agent(AgentBase):
         else:
             tool_call = deepcopy(self.tool_calls[tool_call_id])
 
-        print("send message")
         message = messages.RequestPermission(options, tool_call, result_future)
         log(message)
         self.post_message(message)

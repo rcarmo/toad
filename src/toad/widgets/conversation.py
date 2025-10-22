@@ -712,13 +712,11 @@ class Conversation(containers.Vertical):
         """
         from toad.widgets.question import Ask
 
-        self.prompt.ask = Ask(question, options, callback)
+        self.prompt.ask(Ask(question, options, callback))
 
     def _build_slash_commands(self) -> list[SlashCommand]:
         slash_commands = [
             SlashCommand("/about", "About Toad"),
-            # SlashCommand("/help", "Open Help"),
-            # SlashCommand("/set", "Change a setting"),
         ]
         slash_commands.extend(self.agent_slash_commands)
         slash_commands.sort(key=attrgetter("command"))
