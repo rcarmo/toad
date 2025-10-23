@@ -7,6 +7,12 @@ from textual.reactive import reactive
 
 
 class StrikeText(Widget):
+    DEFAULT_CSS = """
+    StrikeText {
+        height: auto;
+    }
+    """
+
     strike_time: reactive[float | None] = reactive(None)
 
     def __init__(
@@ -26,7 +32,7 @@ class StrikeText(Widget):
     def render(self) -> Content:
         content = self.content
         if self.strike_time is not None:
-            position = int((monotonic() - self.strike_time) * 100)
+            position = int((monotonic() - self.strike_time) * 70)
             content = content.stylize("strike", 0, position)
             if position > len(content):
                 self.auto_refresh = None
@@ -35,12 +41,23 @@ class StrikeText(Widget):
 
 if __name__ == "__main__":
     from textual.app import App, ComposeResult
+    from textual.widgets import Static
 
     class StrikeApp(App):
+        CSS = """
+        Screen {
+            overflow: auto;
+        }
+
+        """
         BINDINGS = [("space", "strike", "Strike")]
 
         def compose(self) -> ComposeResult:
+            for n in range(20):
+                yield Static("HELLO")
             yield StrikeText(Content("Where there is a Will, there is a way"))
+            for n in range(200):
+                yield Static("World")
 
         def action_strike(self):
             self.query_one(StrikeText).strike()
