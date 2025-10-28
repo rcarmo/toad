@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
 from pathlib import Path
-from typing import Self
+import shlex
+from typing import Callable, Self
 
 from textual import on
-from textual.reactive import var
+from textual.reactive import var, Initialize
 from textual.app import ComposeResult
 
 from textual.actions import SkipAction
@@ -31,13 +32,11 @@ from toad.messages import UserInputSubmitted
 from toad.slash_command import SlashCommand
 from toad.prompt.extract import extract_paths_from_prompt
 from toad.acp.agent import Mode
+from toad.path_complete import PathComplete
 
 
 class AutoCompleteOptions(OptionList, can_focus=False):
     """A list of auto complete options (slash commands)."""
-
-    def watch_highlighted(self, highlighted: int | None) -> None:
-        super().watch_highlighted(highlighted)
 
 
 class ModeSwitcher(OptionList):
@@ -90,12 +89,22 @@ class PromptTextArea(HighlightedTextArea):
             key_display="⇧+⏎",
             tooltip="Send the prompt to the agent",
         ),
+        Binding(
+            "tab",
+            "tab_complete",
+            "Complete",
+            tooltip="Complete path (if possible)",
+            priority=True,
+        ),
     ]
 
     auto_completes: var[list[Option]] = var(list)
     multi_line = var(False, bindings=True)
     shell_mode = var(False, bindings=True)
     agent_ready: var[bool] = var(False)
+    path_complete: var[PathComplete] = var(Initialize(lambda obj: PathComplete()))
+    suggestions: var[list[str] | None] = var(None)
+    suggestions_index: var[int] = var(0)
 
     class Submitted(Message):
         def __init__(self, markdown: str) -> None:
@@ -120,10 +129,15 @@ class PromptTextArea(HighlightedTextArea):
         ):
             self.post_message(self.RequestShellMode())
             event.prevent_default()
+        elif self.shell_mode and event.key == "tab":
+            event.prevent_default()
+        else:
+            self.suggestions = None
+            self.suggestion = ""
 
     def update_suggestion(self) -> None:
+        prompt = self.query_ancestor(Prompt)
         if self.selection.start == self.selection.end and self.text.startswith("/"):
-            prompt = self.query_ancestor(Prompt)
             cursor_row, cursor_column = prompt.prompt_text_area.selection.end
             line = prompt.prompt_text_area.document.get_line(cursor_row)
             post_cursor = line[cursor_column:]
@@ -131,6 +145,11 @@ class PromptTextArea(HighlightedTextArea):
             prompt.load_suggestions(pre_cursor, post_cursor)
         else:
             self.query_ancestor(Prompt).show_auto_completes = False
+
+            if self.shell_mode and self.cursor_at_end_of_text and "\n" not in self.text:
+                if prompt.complete_callback is not None:
+                    if completes := prompt.complete_callback(self.text):
+                        self.suggestion = completes[-1]
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         if action == "newline" and self.multi_line:
@@ -146,7 +165,7 @@ class PromptTextArea(HighlightedTextArea):
             self.app.bell()
             self.post_message(
                 messages.Flash(
-                    "Agent is not ready. Please wait while the agent conntects…",
+                    "Agent is not ready. Please wait while the agent connects…",
                     "warning",
                 )
             )
@@ -168,8 +187,17 @@ class PromptTextArea(HighlightedTextArea):
             )
             return
         if self.suggestion:
-            self.insert(self.suggestion + " ")
-            self.suggestion = ""
+            if " " not in self.text:
+                self.insert(self.suggestion + " ")
+            else:
+                prompt = self.query_ancestor(Prompt)
+                last_token = shlex.split(self.text + self.suggestion)[-1]
+                last_token_path = Path(prompt.working_directory) / last_token
+                if last_token_path.is_dir():
+                    self.insert(self.suggestion)
+                else:
+                    self.insert(self.suggestion + " ")
+                self.suggestion = ""
             return
         self.post_message(UserInputSubmitted(self.text, self.shell_mode))
         self.clear()
@@ -178,12 +206,26 @@ class PromptTextArea(HighlightedTextArea):
         if self.auto_completes:
             self.post_message(Prompt.AutoCompleteMove(-1))
         else:
+            if self.selection.is_empty and not select:
+                row, _column = self.selection[0]
+                if row == 0 or row == (self.wrapped_document.height - 1):
+                    self.post_message(
+                        messages.HistoryMove(-1, self.shell_mode, self.text)
+                    )
+                    return
             super().action_cursor_up(select)
 
     def action_cursor_down(self, select: bool = False):
         if self.auto_completes:
             self.post_message(Prompt.AutoCompleteMove(+1))
         else:
+            if self.selection.is_empty and not select:
+                row, _column = self.selection[0]
+                if row == 0 or row == (self.wrapped_document.height - 1):
+                    self.post_message(
+                        messages.HistoryMove(+1, self.shell_mode, self.text)
+                    )
+                    return
             super().action_cursor_down(select)
 
     def action_delete_left(self) -> None:
@@ -192,6 +234,56 @@ class PromptTextArea(HighlightedTextArea):
             self.post_message(self.CancelShell())
             return
         return super().action_delete_left()
+
+    async def action_tab_complete(self) -> None:
+        if not self.shell_mode:
+            return
+
+        import shlex
+
+        prompt = self.query_ancestor(Prompt)
+
+        if not self.cursor_at_end_of_text:
+            return
+
+        _cursor_row, cursor_column = prompt.prompt_text_area.selection.end
+        pre_complete = self.text[:cursor_column]
+        post_complete = self.text[cursor_column:]
+        shlex_tokens = shlex.split(pre_complete)
+
+        tab_complete, suggestions = await self.path_complete(
+            Path(prompt.working_directory), shlex_tokens[-1]
+        )
+
+        self.log(tab_complete)
+        self.log(suggestions)
+
+        if tab_complete is not None:
+            shlex_tokens = shlex_tokens[:-1] + [shlex_tokens[-1] + tab_complete]
+            path_component = Path(prompt.working_directory) / shlex_tokens[-1]
+            if path_component.is_file():
+                spaces = " "
+            else:
+                spaces = ""
+
+            self.clear()
+            self.insert(
+                " ".join(token.replace(" ", "\\ ") for token in shlex_tokens)
+                + post_complete
+                + spaces
+            )
+            self.suggestions = None
+        else:
+            if suggestions != self.suggestions:
+                self.suggestions = suggestions or None
+                self.suggestions_index = 0
+                if suggestions:
+                    self.suggestion = suggestions[0]
+            elif self.suggestions:
+                self.suggestions_index = (self.suggestions_index + 1) % len(
+                    self.suggestions
+                )
+                self.suggestion = self.suggestions[self.suggestions_index]
 
     def watch_selection(
         self, previous_selection: Selection, selection: Selection
@@ -264,13 +356,22 @@ class Prompt(containers.VerticalGroup):
         id: str | None = None,
         classes: str | None = None,
         disabled: bool = False,
+        complete_callback: Callable[[str], list[str]] | None = None,
     ):
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
         self.ask_queue: list[Ask] = []
+        self.complete_callback = complete_callback
 
     @property
     def text(self) -> str:
         return self.prompt_text_area.text
+
+    @text.setter
+    def text(self, text: str) -> None:
+        self.prompt_text_area.text = text
+        self.prompt_text_area.selection = Selection.cursor(
+            self.prompt_text_area.get_cursor_line_end_location()
+        )
 
     def watch_current_mode(self, mode: Mode | None) -> None:
         self.set_class(mode is not None, "-has-mode")
@@ -624,6 +725,9 @@ class Prompt(containers.VerticalGroup):
         return True
 
     def action_dismiss(self) -> None:
+        if self.prompt_text_area.suggestion:
+            self.prompt_text_area.suggestion = ""
+            return
         if self.shell_mode:
             self.shell_mode = False
         elif self.show_auto_completes:

@@ -18,6 +18,7 @@ from textual import events
 from textual.actions import SkipAction
 from textual.binding import Binding
 from textual.content import Content
+from textual.geometry import clamp
 from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import Static
@@ -29,12 +30,14 @@ from textual.layout import WidgetPlacement
 
 
 from toad import jsonrpc, messages
+from toad import paths
 from toad.acp import messages as acp_messages
 from toad.app import ToadApp
 from toad.acp import protocol as acp_protocol
 from toad.acp.agent import Mode
 from toad.answer import Answer
 from toad.agent import AgentBase, AgentReady, AgentFail
+from toad.history import History
 from toad.widgets.flash import Flash
 from toad.widgets.menu import Menu
 from toad.widgets.note import Note
@@ -66,6 +69,10 @@ class Loading(Static):
 
 
 class Cursor(Static):
+    """The block 'cursor' -- A vertical line to the left of a block in the conversation that
+    is used to navigate the discussion history.
+    """
+
     follow_widget: var[Widget | None] = var(None)
     blink = var(True, toggle_class="-blink")
 
@@ -131,6 +138,8 @@ class Window(containers.VerticalScroll):
 
 
 class Conversation(containers.Vertical):
+    """Holds the agent conversation (input, output, and various controls / information)."""
+
     BINDING_GROUP_TITLE = "Conversation"
     CURSOR_BINDING_GROUP = Binding.Group(description="Cursor")
     BINDINGS = [
@@ -201,6 +210,8 @@ class Conversation(containers.Vertical):
     prompt = getters.query_one(Prompt)
     app = getters.app(ToadApp)
     _shell: var[Shell | None] = var(None)
+    shell_history_index: var[int] = var(0)
+    prompt_history_index: var[int] = var(0)
 
     agent: var[AgentBase | None] = var(None, bindings=True)
     agent_info: var[Content] = var(Content())
@@ -226,6 +237,40 @@ class Conversation(containers.Vertical):
         self._ansi_log: ANSILog | None = None
         self._last_escape_time: float = monotonic()
 
+        self.project_data_path = paths.get_project_data(project_path)
+        self.shell_history = History(self.project_data_path / "shell_history.jsonl")
+        self.prompt_history = History(self.project_data_path / "prompt_history.jsonl")
+
+    def validate_shell_history_index(self, index: int) -> int:
+        return clamp(index, -self.shell_history.size, 0)
+
+    def validate_prompt_history_index(self, index: int) -> int:
+        return clamp(index, -self.shell_history.size, 0)
+
+    def shell_complete(self, prefix: str) -> list[str]:
+        return self.shell_history.complete(prefix)
+
+    async def watch_shell_history_index(self, previous_index: int, index: int) -> None:
+        if previous_index == 0:
+            self.shell_history.current = self.prompt.text
+        try:
+            history_entry = await self.shell_history.get_entry(index)
+        except IndexError:
+            pass
+        else:
+            self.prompt.text = history_entry["input"]
+            self.prompt.shell_mode = True
+
+    async def watch_prompt_history_index(self, previous_index: int, index: int) -> None:
+        if previous_index == 0:
+            self.prompt_history.current = self.prompt.text
+        try:
+            history_entry = await self.prompt_history.get_entry(index)
+        except IndexError:
+            pass
+        else:
+            self.prompt.text = history_entry["input"]
+
     def compose(self) -> ComposeResult:
         yield Throbber(id="throbber")
         with Window():
@@ -234,7 +279,7 @@ class Conversation(containers.Vertical):
                     yield Cursor()
                 yield Contents(id="contents")
         yield Flash()
-        yield Prompt().data_bind(
+        yield Prompt(complete_callback=self.shell_complete).data_bind(
             project_path=Conversation.project_path,
             working_directory=Conversation.working_directory,
             agent_info=Conversation.agent_info,
@@ -396,10 +441,16 @@ class Conversation(containers.Vertical):
 
     @on(messages.UserInputSubmitted)
     async def on_user_input_submitted(self, event: messages.UserInputSubmitted) -> None:
+        if not event.body.strip():
+            return
         if event.shell:
+            await self.shell_history.append(event.body)
+            self.shell_history_index = 0
             await self.post_shell(event.body)
             self.prompt.shell_mode = False
         elif text := event.body.strip():
+            await self.prompt_history.append(event.body)
+            self.prompt_history_index = 0
             if text.startswith("/"):
                 await self.slash_command(text)
             else:
@@ -677,6 +728,16 @@ class Conversation(containers.Vertical):
         self.modes = message.modes
         self.current_mode = self.modes[message.current_mode]
 
+    @on(messages.HistoryMove)
+    async def on_history_move(self, message: messages.HistoryMove) -> None:
+        message.stop()
+        if message.shell or not message.body.strip():
+            await self.shell_history.open()
+            self.shell_history_index += message.direction
+        else:
+            await self.prompt_history.open()
+            self.prompt_history_index += message.direction
+
     @work
     async def request_permissions(
         self,
@@ -805,6 +866,10 @@ class Conversation(containers.Vertical):
         self.app.settings_changed_signal.subscribe(self, self._settings_changed)
         # self.shell.start()
 
+        self.shell_history.complete.add_words(
+            self.app.settings.get("shell.allow_commands", expect_type=str).split()
+        )
+
         if self.app.acp_command:
 
             def start_agent():
@@ -821,6 +886,8 @@ class Conversation(containers.Vertical):
 
     def _settings_changed(self, setting_item: tuple[str, str]) -> None:
         key, value = setting_item
+        if key == "shell.allow_commands":
+            self.shell_history.complete.add_words(value.split())
         # if key == "llm.model":
         #     self.conversation = llm.get_model(value).conversation()
 
@@ -835,16 +902,12 @@ class Conversation(containers.Vertical):
             anchor=True,
         )
 
-        notes_path = Path(__file__).parent / "../../../notes.md"
-        from toad.widgets.markdown_note import MarkdownNote
-
-        # Notes are a temporary "feature"
-        try:
-            await self.post(
-                MarkdownNote(notes_path.read_text(), name="read_text", classes="note")
-            )
-        except Exception:
-            pass
+        await self.post(
+            Note(
+                f"project data directory is [$text-success]'{self.project_data_path!s}'"
+            ),
+            anchor=True,
+        )
 
     def watch_agent(self, agent: AgentBase | None) -> None:
         if agent is None:
@@ -919,6 +982,7 @@ class Conversation(containers.Vertical):
 
     @property
     def shell(self) -> Shell:
+        """A Shell instance."""
         system = platform.system()
         if system == "Darwin":
             shell_command = self.app.settings.get("shell.macos.run", str, expand=False)
@@ -936,6 +1000,11 @@ class Conversation(containers.Vertical):
         return self._shell
 
     async def post_shell(self, command: str) -> None:
+        """Post a command to the shell.
+
+        Args:
+            command: Command to execute.
+        """
         from toad.widgets.shell_result import ShellResult
 
         if command.strip():
@@ -1200,4 +1269,9 @@ class Conversation(containers.Vertical):
             from toad import about
             from toad.widgets.markdown_note import MarkdownNote
 
-            await self.post(MarkdownNote(about.render(self.app), classes="about"))
+            about_md = about.render(self.app)
+            await self.post(MarkdownNote(about_md, classes="about"))
+            self.app.copy_to_clipboard(about_md)
+            self.notify(
+                "A copy of /about has been placed in your clipboard", title="About"
+            )
