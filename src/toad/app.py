@@ -1,12 +1,14 @@
 from functools import cached_property
 from pathlib import Path
 import json
+from time import monotonic
+from typing import ClassVar
 
-import platformdirs
 import random
 
 from rich import terminal_theme
 
+from textual.binding import Binding, BindingType
 from textual.content import Content
 from textual.reactive import var, reactive
 from textual.app import App
@@ -178,10 +180,20 @@ def get_settings_screen():
     return SettingsScreen()
 
 
-class ToadApp(App):
+class ToadApp(App, inherit_bindings=False):
     SCREENS = {"settings": get_settings_screen}
-
     BINDING_GROUP_TITLE = "System"
+    BINDINGS: ClassVar[list[BindingType]] = [
+        Binding(
+            "ctrl+q",
+            "quit",
+            "Quit",
+            tooltip="Quit the app and return to the command prompt.",
+            show=False,
+            priority=True,
+        ),
+        Binding("ctrl+c", "help_quit", show=False, system=True),
+    ]
     CSS_PATH = "toad.tcss"
     ALLOW_IN_MAXIMIZED_VIEW = ""
 
@@ -189,6 +201,7 @@ class ToadApp(App):
     column: reactive[bool] = reactive(False)
     column_width: reactive[int] = reactive(100)
     scrollbar: reactive[str] = reactive("normal")
+    last_ctrl_c_time = reactive(0.0)
 
     def __init__(
         self,
@@ -291,4 +304,12 @@ class ToadApp(App):
             column_width=ToadApp.column_width,
             scrollbar=ToadApp.scrollbar,
             project_path=Path(self.project_dir or "./").resolve().absolute(),
+        )
+
+    def action_help_quit(self) -> None:
+        if (time := monotonic()) - self.last_ctrl_c_time <= 5.0:
+            self.exit()
+        self.last_ctrl_c_time = time
+        self.notify(
+            "Press [b]ctrl+c[/b] again to quit the app", title="Do you want to quit?"
         )

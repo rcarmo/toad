@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from pathlib import Path
 import shlex
-from typing import Callable, Literal, Self, Sequence
+from typing import Callable, Literal, Self
 
 from textual import on
 from textual.reactive import var, Initialize
