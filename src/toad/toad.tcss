@@ -144,7 +144,7 @@ Conversation {
     }
     &.-scrollbar-hidden {
         Window {
-            scrollbar-gutter: auto;
+            # scrollbar-gutter: auto;
             scrollbar-size-vertical: 0;
         }
     }

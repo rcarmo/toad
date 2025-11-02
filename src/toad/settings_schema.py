@@ -59,7 +59,11 @@ SCHEMA: list[SchemaDict] = [
                 "title": "Scrollbar size",
                 "type": "choices",
                 "default": "normal",
-                "choices": ["normal", "thin", "hidden"],
+                "choices": [
+                    ("Normal", "normal"),
+                    ("Thin", "thin"),
+                    ("Hidden", "hidden"),
+                ],
             },
             {
                 "key": "throbber",
@@ -68,8 +72,8 @@ SCHEMA: list[SchemaDict] = [
                 "type": "choices",
                 "default": "quotes",
                 "choices": [
-                    "pulse",
-                    "quotes",
+                    ("Pulse", "pulse"),
+                    ("Quotes", "quotes"),
                 ],
             },
             {
@@ -216,7 +220,11 @@ SCHEMA: list[SchemaDict] = [
                 "title": "Display preference",
                 "default": "auto",
                 "type": "choices",
-                "choices": ["unified", "split", "auto"],
+                "choices": [
+                    ("Unified", "unified"),
+                    ("Split", "split"),
+                    ("Best fit", "auto"),
+                ],
             }
         ],
     },

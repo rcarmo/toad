@@ -70,6 +70,19 @@ class SettingsScreen(ModalScreen):
                         if setting.type == "text" or default is None:
                             help = Content.from_markup(setting.help)
                         else:
+                            if setting.type == "choices":
+                                # For choices we need to translate the default to its associated label
+                                choices = setting.choices or []
+                                for choice in choices:
+                                    if isinstance(choice, tuple):
+                                        title, value = choice
+                                    else:
+                                        title = value = choice
+                                    if default == value:
+                                        default = title
+                                else:
+                                    help = Content()
+
                             if setting.help:
                                 help = Content.assemble(
                                     Content.from_markup(setting.help),
@@ -81,7 +94,8 @@ class SettingsScreen(ModalScreen):
                                 )
 
                         yield Static(setting.title, classes="title")
-                        yield Static(help, classes="help")
+                        if help:
+                            yield Static(help, classes="help")
                         if setting.type == "string":
                             with self.prevent(Input.Changed):
                                 yield Input(
