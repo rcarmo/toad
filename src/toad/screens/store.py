@@ -1,6 +1,11 @@
+import json
+
 from importlib.metadata import version
+from importlib.resources import files
 
 from textual.screen import Screen
+from textual import work
+from textual import getters
 from textual import on
 from textual.app import ComposeResult
 from textual.content import Content
@@ -9,6 +14,8 @@ from textual import widgets
 
 from toad.pill import pill
 from toad.widgets.mandelbrot import Mandelbrot
+from toad.widgets.grid_select import GridSelect
+from toad.screens.store_schema import Agent
 
 
 QR = """\
@@ -27,15 +34,26 @@ QR = """\
 ▀▀▀▀▀▀▀ ▀▀▀  ▀   ▀▀▀▀▀▀▀▀"""
 
 
+class AgentItem(widgets.Static):
+    pass
+
+
 class StoreScreen(Screen):
     CSS_PATH = "store.tcss"
 
+    agents_view = getters.query_one("#agents-view")
+
     def compose(self) -> ComposeResult:
-        with containers.VerticalGroup(id="title-container"):
-            with containers.Grid(id="title-grid"):
-                yield Mandelbrot()
-                yield widgets.Label(self.get_info(), id="info")
-                # yield widgets.Label(QR, id="qr")
+        with containers.VerticalScroll():
+            with containers.VerticalGroup(id="title-container"):
+                with containers.Grid(id="title-grid"):
+                    yield Mandelbrot()
+                    yield widgets.Label(self.get_info(), id="info")
+                    # yield widgets.Label(QR, id="qr")
+            yield widgets.Static("Agents", classes="heading")
+            yield (agents_view := GridSelect(id="agents-view", min_column_width=40))
+            agents_view.loading = True
+        yield widgets.Footer()
 
     def get_info(self) -> Content:
         content = Content.assemble(
@@ -67,6 +85,36 @@ class StoreScreen(Screen):
         import webbrowser
 
         webbrowser.open(url)
+
+    async def update_agents_data(self, agents: list[Agent]) -> None:
+        agents_view = self.agents_view
+        agent_items: list[AgentItem] = []
+        for agent in agents:
+            content = Content.assemble(
+                (agent["name"]),
+                " ",
+                pill("coding", "$success-muted", "$text-success"),
+                "\n",
+                (agent["author_name"], "$text-secondary italic"),
+                "\n",
+                (agent["description"], "dim"),
+            )
+            agent_items.append(AgentItem(content))
+        await agents_view.mount_all(agent_items)
+        agents_view.loading = False
+
+    @work(thread=True)
+    def on_mount(self) -> None:
+        try:
+            data_file = files("toad.data").joinpath("agents.json")
+            with data_file.open("r", encoding="utf-8") as agents_file:
+                agents_data: list[Agent] = json.load(agents_file)
+        except Exception:
+            self.notify(
+                "Failed to read agents data", title="Agents data", severity="error"
+            )
+        else:
+            self.app.call_from_thread(self.update_agents_data, agents_data)
 
 
 if __name__ == "__main__":

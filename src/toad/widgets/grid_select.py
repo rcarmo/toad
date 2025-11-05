@@ -10,7 +10,7 @@ from textual.widget import Widget
 
 
 class GridSelect(containers.ItemGrid, can_focus=True):
-    highlighted = reactive(0)
+    highlighted = reactive(-1)
 
     CURSOR_GROUP = Binding.Group("Move selection", compact=False)
     BINDINGS = [
@@ -30,8 +30,14 @@ class GridSelect(containers.ItemGrid, can_focus=True):
         name: str | None = None,
         id: str | None = None,
         classes: str | None = None,
+        min_column_width: int = 30,
     ):
-        super().__init__(name=name, id=id, classes=classes, min_column_width=30)
+        super().__init__(
+            name=name,
+            id=id,
+            classes=classes,
+            min_column_width=min_column_width,
+        )
 
     @property
     def grid_size(self) -> tuple[int, int] | None:

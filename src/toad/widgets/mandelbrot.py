@@ -6,11 +6,10 @@ from rich.style import Style as RichStyle
 
 from textual import events
 from textual.color import Color
-from textual.content import Content, Span
+from textual.content import Content
 from textual.geometry import NULL_SIZE, Offset
 from textual.reactive import reactive, var
 from textual.strip import Strip
-from textual.style import Style
 from textual.app import App, ComposeResult
 from textual.widget import Widget
 from textual.timer import Timer

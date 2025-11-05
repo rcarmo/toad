@@ -1,0 +1,718 @@
+[
+    {
+        "identity": "claude-code.anthropic.ai",
+        "name": "Claude Code",
+        "type": "acp",
+        "short_name": "claude",
+        "author_name": "Anthropic",
+        "author_url": "https://www.anthropic.com/",
+        "publisher_name": "Anthropic",
+        "publisher_url": "https://www.anthropic.com/",
+        "description": "Claude Code is a command-line tool that lets developers delegate coding tasks to Claude directly from their terminal. It provides agentic coding capabilities with Claude's latest models.",
+        "tags": [
+            "coding"
+        ],
+        "help": "# Claude Code\n\nClaude Code is an AI-powered coding assistant that runs in your terminal.\n\n## Features\n- Direct terminal integration\n- Autonomous coding capabilities\n- File editing and creation\n- Multi-file context awareness\n\n## Usage\n```bash\nclaude \"add error handling to auth.py\"\n```\n\nFor more information, visit [docs.claude.com](https://docs.claude.com)\n",
+        "run_command": {
+            "*": "claude"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install Claude Code on macOS",
+                    "type": "bash",
+                    "script": "curl -fsSL https://claude.ai/install.sh | bash"
+                },
+                "uninstall": {
+                    "description": "Uninstall Claude Code from macOS",
+                    "type": "bash",
+                    "script": "rm -rf ~/.claude && rm /usr/local/bin/claude"
+                },
+                "update": {
+                    "description": "Update Claude Code to the latest version",
+                    "type": "bash",
+                    "script": "claude update"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install Claude Code on Linux",
+                    "type": "bash",
+                    "script": "curl -fsSL https://claude.ai/install.sh | bash"
+                },
+                "uninstall": {
+                    "description": "Uninstall Claude Code from Linux",
+                    "type": "bash",
+                    "script": "rm -rf ~/.claude && sudo rm /usr/local/bin/claude"
+                },
+                "update": {
+                    "description": "Update Claude Code to the latest version",
+                    "type": "bash",
+                    "script": "claude update"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install Claude Code on Windows",
+                    "type": "bash",
+                    "script": "powershell -Command \"iwr -useb https://claude.ai/install.ps1 | iex\""
+                },
+                "uninstall": {
+                    "description": "Uninstall Claude Code from Windows",
+                    "type": "bash",
+                    "script": "powershell -Command \"Remove-Item -Recurse -Force $env:USERPROFILE\\.claude\""
+                },
+                "update": {
+                    "description": "Update Claude Code to the latest version",
+                    "type": "bash",
+                    "script": "claude update"
+                }
+            }
+        }
+    },
+    {
+        "identity": "aider.chat",
+        "name": "Aider",
+        "type": "acp",
+        "short_name": "aider",
+        "author_name": "Paul Gauthier",
+        "author_url": "https://github.com/paul-gauthier",
+        "publisher_name": "Aider Team",
+        "publisher_url": "https://aider.chat/",
+        "description": "Aider is an AI pair programming tool that lives in your terminal. It can edit code in your local git repository using GPT-4, Claude, or other LLMs.",
+        "tags": [
+            "coding"
+        ],
+        "help": "# Aider\n\nAI pair programming in your terminal.\n\n## Features\n- Works with multiple LLM providers\n- Git integration\n- Edit multiple files at once\n- Automatic git commits\n\n## Quick Start\n```bash\naider file.py\n```\n\nVisit [aider.chat](https://aider.chat) for documentation.\n",
+        "run_command": {
+            "*": "aider"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install Aider using pip",
+                    "type": "bash",
+                    "script": "pip install aider-chat"
+                },
+                "uninstall": {
+                    "description": "Uninstall Aider",
+                    "type": "bash",
+                    "script": "pip uninstall -y aider-chat"
+                },
+                "update": {
+                    "description": "Update Aider to latest version",
+                    "type": "bash",
+                    "script": "pip install --upgrade aider-chat"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install Aider using pip",
+                    "type": "bash",
+                    "script": "pip install aider-chat"
+                },
+                "uninstall": {
+                    "description": "Uninstall Aider",
+                    "type": "bash",
+                    "script": "pip uninstall -y aider-chat"
+                },
+                "update": {
+                    "description": "Update Aider to latest version",
+                    "type": "bash",
+                    "script": "pip install --upgrade aider-chat"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install Aider using pip",
+                    "type": "bash",
+                    "script": "pip install aider-chat"
+                },
+                "uninstall": {
+                    "description": "Uninstall Aider",
+                    "type": "bash",
+                    "script": "pip uninstall -y aider-chat"
+                },
+                "update": {
+                    "description": "Update Aider to latest version",
+                    "type": "bash",
+                    "script": "pip install --upgrade aider-chat"
+                }
+            }
+        }
+    },
+    {
+        "identity": "gh-copilot.github.com",
+        "name": "GitHub Copilot CLI",
+        "type": "acp",
+        "short_name": "gh-copilot",
+        "author_name": "GitHub",
+        "author_url": "https://github.com/",
+        "publisher_name": "GitHub",
+        "publisher_url": "https://github.com/",
+        "description": "GitHub Copilot for the command line. Get AI-powered suggestions for shell commands, git operations, and general programming tasks directly in your terminal.",
+        "tags": [
+            "coding"
+        ],
+        "help": "# GitHub Copilot CLI\n\nAI assistance for your command line.\n\n## Features\n- Command suggestions\n- Git helper\n- Explain shell commands\n- Generate scripts\n\n## Usage\n```bash\ngh copilot suggest \"find large files\"\ngh copilot explain \"ps aux | grep node\"\n```\n\nRequires GitHub Copilot subscription.\n",
+        "run_command": {
+            "*": "gh copilot"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install GitHub Copilot CLI extension",
+                    "type": "bash",
+                    "script": "gh extension install github/gh-copilot"
+                },
+                "uninstall": {
+                    "description": "Uninstall GitHub Copilot CLI",
+                    "type": "bash",
+                    "script": "gh extension remove copilot"
+                },
+                "update": {
+                    "description": "Update GitHub Copilot CLI",
+                    "type": "bash",
+                    "script": "gh extension upgrade copilot"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install GitHub Copilot CLI extension",
+                    "type": "bash",
+                    "script": "gh extension install github/gh-copilot"
+                },
+                "uninstall": {
+                    "description": "Uninstall GitHub Copilot CLI",
+                    "type": "bash",
+                    "script": "gh extension remove copilot"
+                },
+                "update": {
+                    "description": "Update GitHub Copilot CLI",
+                    "type": "bash",
+                    "script": "gh extension upgrade copilot"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install GitHub Copilot CLI extension",
+                    "type": "bash",
+                    "script": "gh extension install github/gh-copilot"
+                },
+                "uninstall": {
+                    "description": "Uninstall GitHub Copilot CLI",
+                    "type": "bash",
+                    "script": "gh extension remove copilot"
+                },
+                "update": {
+                    "description": "Update GitHub Copilot CLI",
+                    "type": "bash",
+                    "script": "gh extension upgrade copilot"
+                }
+            }
+        }
+    },
+    {
+        "identity": "continue.dev",
+        "name": "Continue",
+        "type": "acp",
+        "short_name": "continue",
+        "author_name": "Continue Dev",
+        "author_url": "https://continue.dev/",
+        "publisher_name": "Continue Dev",
+        "publisher_url": "https://continue.dev/",
+        "description": "Continue is an open-source autopilot for VS Code and JetBrains. It brings ChatGPT-like functionality into your IDE with customizable AI models and context awareness.",
+        "tags": [
+            "coding",
+            "chat"
+        ],
+        "help": "# Continue\n\nOpen-source AI code assistant for your IDE.\n\n## Features\n- Works in VS Code and JetBrains IDEs\n- Customizable LLM providers\n- Code completion\n- Chat with your codebase\n- Refactoring assistance\n\n## Installation\nInstall the VS Code or JetBrains extension from your IDE's marketplace.\n\nLearn more at [continue.dev](https://continue.dev)\n",
+        "run_command": {
+            "*": "code"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install Continue VS Code extension",
+                    "type": "bash",
+                    "script": "code --install-extension Continue.continue"
+                },
+                "uninstall": {
+                    "description": "Uninstall Continue extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension Continue.continue"
+                },
+                "update": {
+                    "description": "Update Continue extension",
+                    "type": "bash",
+                    "script": "code --install-extension Continue.continue --force"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install Continue VS Code extension",
+                    "type": "bash",
+                    "script": "code --install-extension Continue.continue"
+                },
+                "uninstall": {
+                    "description": "Uninstall Continue extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension Continue.continue"
+                },
+                "update": {
+                    "description": "Update Continue extension",
+                    "type": "bash",
+                    "script": "code --install-extension Continue.continue --force"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install Continue VS Code extension",
+                    "type": "bash",
+                    "script": "code --install-extension Continue.continue"
+                },
+                "uninstall": {
+                    "description": "Uninstall Continue extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension Continue.continue"
+                },
+                "update": {
+                    "description": "Update Continue extension",
+                    "type": "bash",
+                    "script": "code --install-extension Continue.continue --force"
+                }
+            }
+        }
+    },
+    {
+        "identity": "cody.sourcegraph.com",
+        "name": "Cody",
+        "type": "acp",
+        "short_name": "cody",
+        "author_name": "Sourcegraph",
+        "author_url": "https://sourcegraph.com/",
+        "publisher_name": "Sourcegraph",
+        "publisher_url": "https://sourcegraph.com/",
+        "description": "Cody is an AI coding assistant from Sourcegraph that uses AI and deep codebase context to help you write and understand code faster. It works across multiple editors and IDEs.",
+        "tags": [
+            "coding",
+            "chat"
+        ],
+        "help": "# Cody\n\nAI coding assistant with deep codebase understanding.\n\n## Features\n- Autocomplete\n- Chat interface\n- Code explanations\n- Unit test generation\n- Multi-repository context\n\n## Supported Editors\n- VS Code\n- JetBrains IDEs\n- Neovim\n\nVisit [sourcegraph.com/cody](https://sourcegraph.com/cody) for setup instructions.\n",
+        "run_command": {
+            "*": "cody"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install Cody CLI",
+                    "type": "bash",
+                    "script": "npm install -g @sourcegraph/cody"
+                },
+                "uninstall": {
+                    "description": "Uninstall Cody CLI",
+                    "type": "bash",
+                    "script": "npm uninstall -g @sourcegraph/cody"
+                },
+                "update": {
+                    "description": "Update Cody CLI",
+                    "type": "bash",
+                    "script": "npm update -g @sourcegraph/cody"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install Cody CLI",
+                    "type": "bash",
+                    "script": "npm install -g @sourcegraph/cody"
+                },
+                "uninstall": {
+                    "description": "Uninstall Cody CLI",
+                    "type": "bash",
+                    "script": "npm uninstall -g @sourcegraph/cody"
+                },
+                "update": {
+                    "description": "Update Cody CLI",
+                    "type": "bash",
+                    "script": "npm update -g @sourcegraph/cody"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install Cody CLI",
+                    "type": "bash",
+                    "script": "npm install -g @sourcegraph/cody"
+                },
+                "uninstall": {
+                    "description": "Uninstall Cody CLI",
+                    "type": "bash",
+                    "script": "npm uninstall -g @sourcegraph/cody"
+                },
+                "update": {
+                    "description": "Update Cody CLI",
+                    "type": "bash",
+                    "script": "npm update -g @sourcegraph/cody"
+                }
+            }
+        }
+    },
+    {
+        "identity": "cursor.com",
+        "name": "Cursor AI",
+        "type": "acp",
+        "short_name": "cursor",
+        "author_name": "Cursor Team",
+        "author_url": "https://cursor.com/",
+        "publisher_name": "Anysphere Inc.",
+        "publisher_url": "https://cursor.com/",
+        "description": "Cursor is an AI-first code editor built on VS Code. It offers next-generation AI assistance with features like Cmd+K for inline edits and AI chat that understands your entire codebase.",
+        "tags": [
+            "coding",
+            "chat"
+        ],
+        "help": "# Cursor AI\n\nThe AI-first code editor.\n\n## Features\n- Built on VS Code\n- Cmd+K for inline AI edits\n- Chat with your codebase\n- AI-powered autocomplete\n- Natural language code generation\n\n## Getting Started\n1. Download Cursor from cursor.com\n2. Import your VS Code settings\n3. Start coding with AI assistance\n\n## Keyboard Shortcuts\n- Cmd+K: Inline edit\n- Cmd+L: Open chat\n- Tab: Accept suggestion\n\nLearn more at [cursor.com](https://cursor.com)\n",
+        "run_command": {
+            "*": "cursor"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install Cursor on macOS",
+                    "type": "bash",
+                    "script": "brew install --cask cursor"
+                },
+                "uninstall": {
+                    "description": "Uninstall Cursor from macOS",
+                    "type": "bash",
+                    "script": "brew uninstall --cask cursor"
+                },
+                "update": {
+                    "description": "Update Cursor",
+                    "type": "bash",
+                    "script": "brew upgrade --cask cursor"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install Cursor on Linux",
+                    "type": "bash",
+                    "script": "curl -fsSL https://cursor.com/install.sh | bash"
+                },
+                "uninstall": {
+                    "description": "Uninstall Cursor from Linux",
+                    "type": "bash",
+                    "script": "sudo rm -rf /opt/cursor /usr/share/applications/cursor.desktop"
+                },
+                "update": {
+                    "description": "Update Cursor",
+                    "type": "bash",
+                    "script": "curl -fsSL https://cursor.com/install.sh | bash"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install Cursor on Windows",
+                    "type": "bash",
+                    "script": "winget install Cursor.Cursor"
+                },
+                "uninstall": {
+                    "description": "Uninstall Cursor from Windows",
+                    "type": "bash",
+                    "script": "winget uninstall Cursor.Cursor"
+                },
+                "update": {
+                    "description": "Update Cursor",
+                    "type": "bash",
+                    "script": "winget upgrade Cursor.Cursor"
+                }
+            }
+        }
+    },
+    {
+        "identity": "tabnine.com",
+        "name": "Tabnine",
+        "type": "acp",
+        "short_name": "tabnine",
+        "author_name": "Tabnine",
+        "author_url": "https://www.tabnine.com/",
+        "publisher_name": "Tabnine Ltd.",
+        "publisher_url": "https://www.tabnine.com/",
+        "description": "Tabnine is an AI code assistant that provides intelligent code completions. It supports all major programming languages and IDEs, offering both cloud and on-premises deployment options.",
+        "tags": [
+            "coding"
+        ],
+        "help": "# Tabnine\n\nAI code completion for all major IDEs.\n\n## Features\n- Real-time code suggestions\n- Supports 80+ languages\n- Team learning capabilities\n- Privacy-focused (on-premises option)\n- Works offline\n\n## Supported IDEs\n- VS Code\n- JetBrains IDEs\n- Sublime Text\n- Vim/Neovim\n- And more\n\nVisit [tabnine.com](https://www.tabnine.com) for installation guides.\n",
+        "run_command": {
+            "*": "code"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install Tabnine VS Code extension",
+                    "type": "bash",
+                    "script": "code --install-extension TabNine.tabnine-vscode"
+                },
+                "uninstall": {
+                    "description": "Uninstall Tabnine extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension TabNine.tabnine-vscode && rm -rf ~/.tabnine"
+                },
+                "update": {
+                    "description": "Update Tabnine extension",
+                    "type": "bash",
+                    "script": "code --install-extension TabNine.tabnine-vscode --force"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install Tabnine VS Code extension",
+                    "type": "bash",
+                    "script": "code --install-extension TabNine.tabnine-vscode"
+                },
+                "uninstall": {
+                    "description": "Uninstall Tabnine extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension TabNine.tabnine-vscode && rm -rf ~/.tabnine"
+                },
+                "update": {
+                    "description": "Update Tabnine extension",
+                    "type": "bash",
+                    "script": "code --install-extension TabNine.tabnine-vscode --force"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install Tabnine VS Code extension",
+                    "type": "bash",
+                    "script": "code --install-extension TabNine.tabnine-vscode"
+                },
+                "uninstall": {
+                    "description": "Uninstall Tabnine extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension TabNine.tabnine-vscode"
+                },
+                "update": {
+                    "description": "Update Tabnine extension",
+                    "type": "bash",
+                    "script": "code --install-extension TabNine.tabnine-vscode --force"
+                }
+            }
+        }
+    },
+    {
+        "identity": "codeium.com",
+        "name": "Codeium",
+        "type": "acp",
+        "short_name": "codeium",
+        "author_name": "Codeium",
+        "author_url": "https://codeium.com/",
+        "publisher_name": "Exafunction Inc.",
+        "publisher_url": "https://codeium.com/",
+        "description": "Codeium is a free AI-powered code completion and chat tool. It offers autocomplete, intelligent search, and natural language explanations across 70+ programming languages and 40+ editors.",
+        "tags": [
+            "coding",
+            "chat"
+        ],
+        "help": "# Codeium\n\nFree AI-powered toolkit for developers.\n\n## Features\n- Lightning-fast autocomplete\n- AI chat assistant\n- Natural language search\n- Docstring generation\n- Free for individuals\n\n## Key Benefits\n- Unlimited usage\n- No credit card required\n- Enterprise-grade security\n- Multi-language support\n\n## Supported Editors\nWorks with VS Code, JetBrains IDEs, Vim, Emacs, and more.\n\nGet started at [codeium.com](https://codeium.com)\n",
+        "run_command": {
+            "*": "code"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install Codeium VS Code extension",
+                    "type": "bash",
+                    "script": "code --install-extension Codeium.codeium"
+                },
+                "uninstall": {
+                    "description": "Uninstall Codeium extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension Codeium.codeium"
+                },
+                "update": {
+                    "description": "Update Codeium extension",
+                    "type": "bash",
+                    "script": "code --install-extension Codeium.codeium --force"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install Codeium VS Code extension",
+                    "type": "bash",
+                    "script": "code --install-extension Codeium.codeium"
+                },
+                "uninstall": {
+                    "description": "Uninstall Codeium extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension Codeium.codeium"
+                },
+                "update": {
+                    "description": "Update Codeium extension",
+                    "type": "bash",
+                    "script": "code --install-extension Codeium.codeium --force"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install Codeium VS Code extension",
+                    "type": "bash",
+                    "script": "code --install-extension Codeium.codeium"
+                },
+                "uninstall": {
+                    "description": "Uninstall Codeium extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension Codeium.codeium"
+                },
+                "update": {
+                    "description": "Update Codeium extension",
+                    "type": "bash",
+                    "script": "code --install-extension Codeium.codeium --force"
+                }
+            }
+        }
+    },
+    {
+        "identity": "q.aws.amazon.com",
+        "name": "Amazon Q Developer",
+        "type": "acp",
+        "short_name": "amazonq",
+        "author_name": "Amazon Web Services",
+        "author_url": "https://aws.amazon.com/",
+        "publisher_name": "Amazon Web Services",
+        "publisher_url": "https://aws.amazon.com/q/developer/",
+        "description": "Amazon Q Developer is an AI-powered assistant for software development. It provides code suggestions, security scanning, and helps with AWS-related development tasks.",
+        "tags": [
+            "coding",
+            "chat"
+        ],
+        "help": "# Amazon Q Developer\n\nAI assistant for building on AWS.\n\n## Features\n- Code suggestions and generation\n- Security vulnerability scanning\n- AWS service recommendations\n- Inline documentation\n- Chat interface\n\n## Capabilities\n- Explain and debug code\n- Optimize for AWS services\n- Generate unit tests\n- Refactor code\n- Security best practices\n\n## Getting Started\nInstall the IDE extension and sign in with your AWS Builder ID (free).\n\nLearn more at [aws.amazon.com/q/developer](https://aws.amazon.com/q/developer/)\n",
+        "run_command": {
+            "*": "code"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install Amazon Q extension for VS Code",
+                    "type": "bash",
+                    "script": "code --install-extension AmazonWebServices.amazon-q-vscode"
+                },
+                "uninstall": {
+                    "description": "Uninstall Amazon Q extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension AmazonWebServices.amazon-q-vscode"
+                },
+                "update": {
+                    "description": "Update Amazon Q extension",
+                    "type": "bash",
+                    "script": "code --install-extension AmazonWebServices.amazon-q-vscode --force"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install Amazon Q extension for VS Code",
+                    "type": "bash",
+                    "script": "code --install-extension AmazonWebServices.amazon-q-vscode"
+                },
+                "uninstall": {
+                    "description": "Uninstall Amazon Q extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension AmazonWebServices.amazon-q-vscode"
+                },
+                "update": {
+                    "description": "Update Amazon Q extension",
+                    "type": "bash",
+                    "script": "code --install-extension AmazonWebServices.amazon-q-vscode --force"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install Amazon Q extension for VS Code",
+                    "type": "bash",
+                    "script": "code --install-extension AmazonWebServices.amazon-q-vscode"
+                },
+                "uninstall": {
+                    "description": "Uninstall Amazon Q extension",
+                    "type": "bash",
+                    "script": "code --uninstall-extension AmazonWebServices.amazon-q-vscode"
+                },
+                "update": {
+                    "description": "Update Amazon Q extension",
+                    "type": "bash",
+                    "script": "code --install-extension AmazonWebServices.amazon-q-vscode --force"
+                }
+            }
+        }
+    },
+    {
+        "identity": "agent.replit.com",
+        "name": "Replit Agent",
+        "type": "acp",
+        "short_name": "replit-agent",
+        "author_name": "Replit",
+        "author_url": "https://replit.com/",
+        "publisher_name": "Replit Inc.",
+        "publisher_url": "https://replit.com/",
+        "description": "Replit Agent is an AI assistant that can build complete applications from natural language descriptions. It handles coding, deployment, and can iterate based on feedback.",
+        "tags": [
+            "coding",
+            "chat"
+        ],
+        "help": "# Replit Agent\n\nAI that builds complete apps from descriptions.\n\n## Features\n- Natural language to full application\n- Automatic deployment\n- Iterative development\n- Multi-file projects\n- Built-in hosting\n\n## How It Works\n1. Describe what you want to build\n2. Agent creates the application\n3. Test and provide feedback\n4. Agent iterates and improves\n\n## Example Prompts\n- \"Build a todo app with React and Firebase\"\n- \"Create a weather dashboard with OpenWeatherMap API\"\n- \"Make a Discord bot that tracks server statistics\"\n\nVisit [replit.com](https://replit.com) to get started.\n",
+        "run_command": {
+            "*": "replit"
+        },
+        "scripts": {
+            "macos": {
+                "install": {
+                    "description": "Install Replit CLI",
+                    "type": "bash",
+                    "script": "npm install -g @replit/cli"
+                },
+                "uninstall": {
+                    "description": "Uninstall Replit CLI",
+                    "type": "bash",
+                    "script": "npm uninstall -g @replit/cli"
+                },
+                "update": {
+                    "description": "Update Replit CLI",
+                    "type": "bash",
+                    "script": "npm update -g @replit/cli"
+                }
+            },
+            "linux": {
+                "install": {
+                    "description": "Install Replit CLI",
+                    "type": "bash",
+                    "script": "npm install -g @replit/cli"
+                },
+                "uninstall": {
+                    "description": "Uninstall Replit CLI",
+                    "type": "bash",
+                    "script": "npm uninstall -g @replit/cli"
+                },
+                "update": {
+                    "description": "Update Replit CLI",
+                    "type": "bash",
+                    "script": "npm update -g @replit/cli"
+                }
+            },
+            "windows": {
+                "install": {
+                    "description": "Install Replit CLI",
+                    "type": "bash",
+                    "script": "npm install -g @replit/cli"
+                },
+                "uninstall": {
+                    "description": "Uninstall Replit CLI",
+                    "type": "bash",
+                    "script": "npm uninstall -g @replit/cli"
+                },
+                "update": {
+                    "description": "Update Replit CLI",
+                    "type": "bash",
+                    "script": "npm update -g @replit/cli"
+                }
+            }
+        }
+    }
+]

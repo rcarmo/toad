@@ -1,5 +1,10 @@
 StoreScreen {    
 
+    .heading {
+        margin: 1 1 0 1;
+        border-bottom: heavy $secondary;        
+    }
+
     #title-container {
         align: center top;
         
@@ -9,7 +14,7 @@ StoreScreen {
             grid-size: 2 1;
             # max-width: 100;
             height: auto;
-            grid-columns: 30 1fr;
+            grid-columns: 24 1fr;
             grid-rows: auto;
             grid-gutter: 1 2;
             min-width: 40;
@@ -24,6 +29,29 @@ StoreScreen {
                 # min-height: 8;
             }
         }
+    }
+
+    GridSelect {
+        padding: 0;        
+        margin: 0 0;
+        AgentItem {            
+            border: tall transparent;
+            padding: 0 1;
+            &:hover {
+                background: $panel;
+            }
+            
+        }
+        &:focus AgentItem {
+            &.-highlight {
+                background: $panel;
+                border: tall $primary;
+            }
+        }
+    }
+
+    Collapsible Contents {
+        padding: 0;
     }
 
 }
