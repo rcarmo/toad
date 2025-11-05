@@ -35,9 +35,15 @@ QR = """\
 
 
 class AgentItem(containers.Vertical):
+    """An entry in the Agent grid select."""
+
     def __init__(self, agent: Agent) -> None:
         self._agent = agent
         super().__init__()
+
+    @property
+    def agent(self) -> Agent:
+        return self._agent
 
     def compose(self) -> ComposeResult:
         agent = self._agent
@@ -100,29 +106,16 @@ class StoreScreen(Screen):
 
     async def update_agents_data(self, agents: list[Agent]) -> None:
         agents_view = self.agents_view
-        agent_items: list[AgentItem] = []
-        for agent in agents:
-            agent_items.append(AgentItem(agent))
-            # tags = Content(" ").join(
-            #     [
-            #         Content.from_markup(
-            #             "[$text-primary on $primary-muted] $tag ", tag=tag
-            #         )
-            #         for tag in agent["tags"]
-            #     ]
-            # )
-            # content = Content.assemble(
-            #     (agent["name"]),
-            #     "\n",
-            #     (agent["author_name"], "$text-secondary italic"),
-            #     "\n",
-            #     tags,
-            #     "\n",
-            #     (agent["description"], "dim"),
-            # )
-            # agent_items.append(AgentItem(content))
+        agent_items = [AgentItem(agent) for agent in agents]
         await agents_view.mount_all(agent_items)
         agents_view.loading = False
+
+    @on(GridSelect.Selected)
+    def on_grid_select_selected(self, event: GridSelect.Selected):
+        assert isinstance(event.selected_widget, AgentItem)
+        from toad.screens.agent_modal import AgentModal
+
+        self.app.push_screen(AgentModal(event.selected_widget.agent))
 
     @work(thread=True)
     def on_mount(self) -> None:

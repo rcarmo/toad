@@ -72,3 +72,27 @@ StoreScreen {
     }
 
 }
+
+AgentModal {    
+    
+    align: center middle;
+
+    #container {
+        padding: 0 1 0 0;
+        max-width: 100;
+        height: auto;
+        border: thick $primary 20%;
+
+        #description-container {
+            height: auto;
+            padding: 0 0 1 1;
+            max-height: 20;
+            overflow-y: auto;
+            scrollbar-gutter: stable;
+        }
+
+        Select {
+            width: 1fr
+        }
+    }
+}

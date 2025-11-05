@@ -105,7 +105,7 @@ class GridSelect(containers.ItemGrid, can_focus=True):
             pass
         for widget in event.widget.ancestors_with_self:
             if widget in self.children:
-                if highlighted_widget is event.widget:
+                if highlighted_widget is widget:
                     self.action_select()
                 else:
                     self.highlighted = self.children.index(widget)

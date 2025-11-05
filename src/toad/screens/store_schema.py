@@ -53,3 +53,13 @@ class Agent(TypedDict):
 
     scripts: dict[OS, dict[Action, Script]]
     """Scripts to perform actions, typically at least to install the agent."""
+
+
+class InstalledAgent(TypedDict):
+    identity: str
+    """Identity of installed agent (matches Agent['identity'])"""
+    name: str
+    """Long form name of agent."""
+    short_name: str
+    """Short name of agent (used when launching from the command line)."""
+    run_command: dict[OS, str]
