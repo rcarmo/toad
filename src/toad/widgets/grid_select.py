@@ -96,16 +96,20 @@ class GridSelect(containers.ItemGrid, can_focus=True):
         self.highlighted += 1
 
     def on_click(self, event: events.Click) -> None:
+        if event.widget is None:
+            return
         highlighted_widget: Widget | None = None
         try:
             highlighted_widget = self.children[self.highlighted]
         except IndexError:
             pass
-        if event.widget in self.children:
-            if highlighted_widget is event.widget:
-                self.action_select()
-            else:
-                self.highlighted = self.children.index(event.widget)
+        for widget in event.widget.ancestors_with_self:
+            if widget in self.children:
+                if highlighted_widget is event.widget:
+                    self.action_select()
+                else:
+                    self.highlighted = self.children.index(widget)
+                break
 
     def action_select(self):
         try:

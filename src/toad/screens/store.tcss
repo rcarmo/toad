@@ -9,6 +9,7 @@ StoreScreen {
         align: center top;
         
         #title-grid {
+            margin: 0 1;
             border: block black 20%;
             background: black 20%;
             grid-size: 2 1;
@@ -32,9 +33,11 @@ StoreScreen {
     }
 
     GridSelect {
+        height: auto;        
         padding: 0;        
         margin: 0 0;
-        AgentItem {            
+        AgentItem {   
+            height: auto;               
             border: tall transparent;
             padding: 0 1;
             &:hover {
@@ -50,8 +53,22 @@ StoreScreen {
         }
     }
 
-    Collapsible Contents {
-        padding: 0;
+    AgentItem {
+        Grid {
+            grid-size: 2 1;
+            grid-columns: 1fr auto;
+            height: auto;
+            #type {
+                text-align: right;
+            }
+        }
+        #description {
+            text-style: dim;
+        }
+        #author {
+            text-style: italic;
+            color: $text-secondary;
+        }
     }
 
 }

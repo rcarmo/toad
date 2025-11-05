@@ -73,7 +73,7 @@
     {
         "identity": "aider.chat",
         "name": "Aider",
-        "type": "acp",
+        "type": "coding",
         "short_name": "aider",
         "author_name": "Paul Gauthier",
         "author_url": "https://github.com/paul-gauthier",
@@ -144,7 +144,7 @@
     {
         "identity": "gh-copilot.github.com",
         "name": "GitHub Copilot CLI",
-        "type": "acp",
+        "type": "coding",
         "short_name": "gh-copilot",
         "author_name": "GitHub",
         "author_url": "https://github.com/",
@@ -215,7 +215,7 @@
     {
         "identity": "continue.dev",
         "name": "Continue",
-        "type": "acp",
+        "type": "coding",
         "short_name": "continue",
         "author_name": "Continue Dev",
         "author_url": "https://continue.dev/",
@@ -287,7 +287,7 @@
     {
         "identity": "cody.sourcegraph.com",
         "name": "Cody",
-        "type": "acp",
+        "type": "coding",
         "short_name": "cody",
         "author_name": "Sourcegraph",
         "author_url": "https://sourcegraph.com/",
@@ -359,7 +359,7 @@
     {
         "identity": "cursor.com",
         "name": "Cursor AI",
-        "type": "acp",
+        "type": "coding",
         "short_name": "cursor",
         "author_name": "Cursor Team",
         "author_url": "https://cursor.com/",
@@ -431,7 +431,7 @@
     {
         "identity": "tabnine.com",
         "name": "Tabnine",
-        "type": "acp",
+        "type": "coding",
         "short_name": "tabnine",
         "author_name": "Tabnine",
         "author_url": "https://www.tabnine.com/",
@@ -502,7 +502,7 @@
     {
         "identity": "codeium.com",
         "name": "Codeium",
-        "type": "acp",
+        "type": "coding",
         "short_name": "codeium",
         "author_name": "Codeium",
         "author_url": "https://codeium.com/",
@@ -574,7 +574,7 @@
     {
         "identity": "q.aws.amazon.com",
         "name": "Amazon Q Developer",
-        "type": "acp",
+        "type": "coding",
         "short_name": "amazonq",
         "author_name": "Amazon Web Services",
         "author_url": "https://aws.amazon.com/",
@@ -646,7 +646,7 @@
     {
         "identity": "agent.replit.com",
         "name": "Replit Agent",
-        "type": "acp",
+        "type": "coding",
         "short_name": "replit-agent",
         "author_name": "Replit",
         "author_url": "https://replit.com/",

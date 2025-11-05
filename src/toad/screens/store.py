@@ -34,8 +34,20 @@ QR = """\
 ▀▀▀▀▀▀▀ ▀▀▀  ▀   ▀▀▀▀▀▀▀▀"""
 
 
-class AgentItem(widgets.Static):
-    pass
+class AgentItem(containers.Vertical):
+    def __init__(self, agent: Agent) -> None:
+        self._agent = agent
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        agent = self._agent
+        with containers.Grid():
+            yield widgets.Label(agent["name"], id="name")
+            yield widgets.Label(
+                pill(agent["type"], "$primary-muted", "$text-primary"), id="type"
+            )
+        yield widgets.Label(agent["author_name"], id="author")
+        yield widgets.Static(agent["description"], id="description")
 
 
 class StoreScreen(Screen):
@@ -90,16 +102,25 @@ class StoreScreen(Screen):
         agents_view = self.agents_view
         agent_items: list[AgentItem] = []
         for agent in agents:
-            content = Content.assemble(
-                (agent["name"]),
-                " ",
-                pill("coding", "$success-muted", "$text-success"),
-                "\n",
-                (agent["author_name"], "$text-secondary italic"),
-                "\n",
-                (agent["description"], "dim"),
-            )
-            agent_items.append(AgentItem(content))
+            agent_items.append(AgentItem(agent))
+            # tags = Content(" ").join(
+            #     [
+            #         Content.from_markup(
+            #             "[$text-primary on $primary-muted] $tag ", tag=tag
+            #         )
+            #         for tag in agent["tags"]
+            #     ]
+            # )
+            # content = Content.assemble(
+            #     (agent["name"]),
+            #     "\n",
+            #     (agent["author_name"], "$text-secondary italic"),
+            #     "\n",
+            #     tags,
+            #     "\n",
+            #     (agent["description"], "dim"),
+            # )
+            # agent_items.append(AgentItem(content))
         await agents_view.mount_all(agent_items)
         agents_view.loading = False
 

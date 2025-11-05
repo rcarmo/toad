@@ -6,7 +6,7 @@ type OS = Literal["macos", "linux", "windows", "*"]
 """An operating system identifier, or a '*" wildcard, if it is the same for all OSes."""
 type Action = Literal["install", "uninstall", "update"]
 """An action which the agent supports."""
-type AgentType = Literal["acp"]
+type AgentType = Literal["coding", "chat"]
 """The type of agent."""
 
 
