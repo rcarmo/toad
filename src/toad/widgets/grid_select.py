@@ -10,16 +10,25 @@ from textual.widget import Widget
 
 
 class GridSelect(containers.ItemGrid, can_focus=True):
-    highlighted = reactive(-1)
-
-    CURSOR_GROUP = Binding.Group("Move selection", compact=False)
+    FOCUS_ON_CLICK = False
+    CURSOR_GROUP = Binding.Group("Select")
+    FOCUS_GROUP = Binding.Group("Focus")
     BINDINGS = [
         Binding("up", "cursor_up", "Cursor Up", group=CURSOR_GROUP),
         Binding("down", "cursor_down", "Cursor Down", group=CURSOR_GROUP),
         Binding("left", "cursor_left", "Cursor Left", group=CURSOR_GROUP),
         Binding("right", "cursor_right", "Cursor Right", group=CURSOR_GROUP),
         Binding("enter", "select", "Select"),
+        Binding("tab", "app.focus_next", "Focus Next", group=FOCUS_GROUP),
+        Binding(
+            "shift+tab",
+            "app.focus_previous",
+            "Focus Previous",
+            group=FOCUS_GROUP,
+        ),
     ]
+
+    highlighted: reactive[int | None] = reactive(None)
 
     @dataclass
     class Selected(Message):
@@ -45,9 +54,16 @@ class GridSelect(containers.ItemGrid, can_focus=True):
         return self.layout.grid_size
 
     def on_focus(self):
+        if self.highlighted is None:
+            self.highlighted = 0
         self.reveal_highlight()
 
+    def on_blur(self) -> None:
+        self.highlighted = None
+
     def reveal_highlight(self):
+        if self.highlighted is None:
+            return
         try:
             highlighted_widget = self.children[self.highlighted]
         except IndexError:
@@ -56,19 +72,26 @@ class GridSelect(containers.ItemGrid, can_focus=True):
             if not self.screen.can_view_entire(highlighted_widget):
                 self.screen.scroll_to_center(highlighted_widget, origin_visible=True)
 
-    def watch_highlighted(self, old_highlighted: int, highlighted: int) -> None:
-        try:
-            self.children[old_highlighted].remove_class("-highlight")
-        except IndexError:
-            pass
-        try:
-            highlighted_widget = self.children[highlighted]
-            highlighted_widget.add_class("-highlight")
-        except IndexError:
-            pass
+    def watch_highlighted(
+        self, old_highlighted: int | None, highlighted: int | None
+    ) -> None:
+        if old_highlighted is not None:
+            try:
+                self.children[old_highlighted].remove_class("-highlight")
+            except IndexError:
+                pass
+        if highlighted is not None:
+            try:
+                highlighted_widget = self.children[highlighted]
+                highlighted_widget.add_class("-highlight")
+            except IndexError:
+                pass
         self.reveal_highlight()
 
-    def validate_highlighted(self, highlighted: int) -> int:
+    def validate_highlighted(self, highlighted: int | None) -> int | None:
+        if highlighted is None:
+            return None
+
         if highlighted < 0:
             return 0
         if highlighted >= len(self.children):
@@ -78,46 +101,62 @@ class GridSelect(containers.ItemGrid, can_focus=True):
     def action_cursor_up(self):
         if (grid_size := self.grid_size) is None:
             return
-        width, height = grid_size
-        if self.highlighted >= width:
-            self.highlighted -= width
+        if self.highlighted is None:
+            self.highlighted = 0
+        else:
+            width, _height = grid_size
+            if self.highlighted >= width:
+                self.highlighted -= width
 
     def action_cursor_down(self):
         if (grid_size := self.grid_size) is None:
             return
-        width, height = grid_size
-        if self.highlighted + width < len(self.children):
-            self.highlighted += width
+        if self.highlighted is None:
+            self.highlighted = 0
+        else:
+            width, height = grid_size
+            if self.highlighted + width < len(self.children):
+                self.highlighted += width
 
     def action_cursor_left(self):
-        self.highlighted -= 1
+        if self.highlighted is None:
+            self.highlighted = 0
+        else:
+            self.highlighted -= 1
 
     def action_cursor_right(self):
-        self.highlighted += 1
+        if self.highlighted is None:
+            self.highlighted = 0
+        else:
+            self.highlighted += 1
 
     def on_click(self, event: events.Click) -> None:
         if event.widget is None:
             return
+
         highlighted_widget: Widget | None = None
-        try:
-            highlighted_widget = self.children[self.highlighted]
-        except IndexError:
-            pass
+        if self.highlighted is not None:
+            try:
+                highlighted_widget = self.children[self.highlighted]
+            except IndexError:
+                pass
         for widget in event.widget.ancestors_with_self:
             if widget in self.children:
-                if highlighted_widget is widget:
+                if highlighted_widget is not None and highlighted_widget is widget:
                     self.action_select()
                 else:
                     self.highlighted = self.children.index(widget)
                 break
+        self.focus()
 
     def action_select(self):
-        try:
-            highlighted_widget = self.children[self.highlighted]
-        except IndexError:
-            pass
-        else:
-            self.post_message(self.Selected(highlighted_widget))
+        if self.highlighted is not None:
+            try:
+                highlighted_widget = self.children[self.highlighted]
+            except IndexError:
+                pass
+            else:
+                self.post_message(self.Selected(highlighted_widget))
 
 
 if __name__ == "__main__":

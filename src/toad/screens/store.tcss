@@ -1,5 +1,10 @@
 StoreScreen {    
 
+    .instruction-text {
+        text-style: dim italic;
+        padding: 1 2;
+    }
+
     .heading {
         margin: 1 1 0 1;
         border-bottom: heavy $secondary;        
@@ -32,20 +37,21 @@ StoreScreen {
         }
     }
 
+    LoadingIndicator {
+        height: 3;
+    }
+
     GridSelect {
         height: auto;        
         padding: 0;        
-        margin: 0 0;
-        AgentItem {   
-            height: auto;               
-            border: tall transparent;
-            padding: 0 1;
-            &:hover {
-                background: $panel;
-            }
-            
+        margin: 0 0;    
+
+        &.-highlight {
+            background: $panel;
+            border: tall $primary 30%;
         }
-        &:focus AgentItem {
+
+        &:focus * {
             &.-highlight {
                 background: $panel;
                 border: tall $primary;
@@ -54,6 +60,13 @@ StoreScreen {
     }
 
     AgentItem {
+        height: auto;               
+        border: tall transparent;
+        padding: 0 1;
+        &:hover {
+            background: $panel;
+        }
+
         Grid {
             grid-size: 2 1;
             grid-columns: 1fr auto;
@@ -61,6 +74,21 @@ StoreScreen {
             #type {
                 text-align: right;
             }
+        }
+        #description {
+            text-style: dim;
+        }
+        #author {
+            text-style: italic;
+            color: $text-secondary;
+        }
+    }
+    LauncherItem {
+        height: auto;               
+        border: tall transparent;
+        padding: 0 1;
+        &:hover {
+            background: $panel;
         }
         #description {
             text-style: dim;
@@ -93,7 +121,11 @@ AgentModal {
         }
 
         Select {
-            width: 1fr
+            width: 1fr;            
+            margin-right: 1;
+        }
+        Checkbox {
+            margin: 0;                        
         }
     }
 }

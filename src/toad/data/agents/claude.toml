@@ -31,5 +31,9 @@ Your codebase, evolving at thought speed.
 
 
 [actions."*".install]
-commands = ["curl -fsSL https://claude.ai/install.sh | bash", "npm install @zed-industries/claude-code-acp"]
+command = "curl -fsSL https://claude.ai/install.sh | bash &&  npm install @zed-industries/claude-code-acp"
 description = "Install Claude Code"
+
+[actions."*".install_acp]
+command = "npm install @zed-industries/claude-code-acp"
+description = "Install ACP adapter for Claude Code"

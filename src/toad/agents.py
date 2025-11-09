@@ -8,7 +8,15 @@ class AgentReadError(Exception):
     """Problem reading the agents."""
 
 
-async def read_agents() -> list[Agent]:
+async def read_agents() -> dict[str, Agent]:
+    """Read agent information from data/agents
+
+    Raises:
+        AgentReadError: If the files could not be read.
+
+    Returns:
+        A mapping of identity on to Agent dict.
+    """
     import tomllib
 
     def read_agents() -> list[Agent]:
@@ -31,4 +39,6 @@ async def read_agents() -> list[Agent]:
         return agents
 
     agents = await asyncio.to_thread(read_agents)
-    return agents
+    agent_map = {agent["identity"]: agent for agent in agents}
+
+    return agent_map

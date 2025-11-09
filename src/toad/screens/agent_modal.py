@@ -1,39 +1,48 @@
 from typing import cast
 
 from textual import on
+from textual import getters
 from textual.app import ComposeResult
+
 from textual.screen import ModalScreen
 from textual import containers
 from textual import widgets
 from textual.reactive import var
 
 import toad
-from toad.agent_schema import Agent, OS
+from toad.agent_schema import Action, Agent, OS, Command
+from toad.app import ToadApp
 
 
 class AgentModal(ModalScreen):
-    AUTO_FOCUS = "#script-select"
+    AUTO_FOCUS = "#launcher-checkbox"
 
     BINDINGS = [("escape", "dismiss", "Dismiss")]
 
     action = var("")
+
+    app = getters.app(ToadApp)
 
     def __init__(self, agent: Agent) -> None:
         self._agent = agent
         super().__init__()
 
     def compose(self) -> ComposeResult:
+        launcher_set = frozenset(
+            self.app.settings.get("launcher.agents", str).splitlines()
+        )
+
         agent = self._agent
 
-        scripts = agent["actions"]
+        actions = agent["actions"]
 
         script_os = cast(OS, toad.os)
-        if script_os not in scripts:
+        if script_os not in actions:
             script_os = "*"
 
-        scripts = scripts[cast(OS, script_os)]
+        commands: dict[Action, Command] = actions[cast(OS, script_os)]
         script_choices = [
-            (script["description"], name) for name, script in scripts.items()
+            (action["description"], name) for name, action in commands.items()
         ]
 
         with containers.Vertical(id="container"):
@@ -41,7 +50,11 @@ class AgentModal(ModalScreen):
                 yield widgets.Markdown(agent["help"], id="description")
             with containers.VerticalGroup():
                 with containers.HorizontalGroup():
-                    yield widgets.Checkbox("Show in launcher")
+                    yield widgets.Checkbox(
+                        "Show in launcher",
+                        value=agent["identity"] in launcher_set,
+                        id="launcher-checkbox",
+                    )
                     yield widgets.Select(
                         script_choices,
                         prompt="Actions",
@@ -51,6 +64,16 @@ class AgentModal(ModalScreen):
                     yield widgets.Button(
                         "Go", variant="primary", id="run-action", disabled=True
                     )
+
+    @on(widgets.Checkbox.Changed)
+    def on_checkbox_changed(self, event: widgets.Select.Changed) -> None:
+        launcher_set = set(self.app.settings.get("launcher.agents", str).splitlines())
+        agent_identity = self._agent["identity"]
+        if event.value:
+            launcher_set.add(agent_identity)
+        else:
+            launcher_set.discard(agent_identity)
+        self.app.settings.set("launcher.agents", "\n".join(launcher_set))
 
     @on(widgets.Select.Changed)
     def on_select_changed(self, event: widgets.Select.Changed) -> None:

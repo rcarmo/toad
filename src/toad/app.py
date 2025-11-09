@@ -23,6 +23,7 @@ from toad import atomic
 if TYPE_CHECKING:
     from toad.screens.main import MainScreen
     from toad.screens.settings import SettingsScreen
+    from toad.screens.store import StoreScreen
 
 
 DRACULA_TERMINAL_THEME = terminal_theme.TerminalTheme(
@@ -199,8 +200,16 @@ def get_settings_screen() -> SettingsScreen:
     return SettingsScreen()
 
 
+def get_store_screen() -> StoreScreen:
+    """Get the store screen (lazily loaded)."""
+    from toad.screens.store import StoreScreen
+
+    return StoreScreen()
+
+
 class ToadApp(App, inherit_bindings=False):
     SCREENS = {"settings": get_settings_screen}
+    MODES = {"store": get_store_screen}
     BINDING_GROUP_TITLE = "System"
     BINDINGS: ClassVar[list[BindingType]] = [
         Binding(
@@ -226,6 +235,7 @@ class ToadApp(App, inherit_bindings=False):
         self,
         acp_command: str | None = None,
         project_dir: str | None = None,
+        mode: str | None = None,
     ) -> None:
         """
 
@@ -235,6 +245,7 @@ class ToadApp(App, inherit_bindings=False):
         self.settings_changed_signal = Signal(self, "settings_changed")
         self.acp_command = acp_command
         self.project_dir = project_dir
+        self._initial_mode = mode
         super().__init__()
 
     def get_loading_widget(self) -> Widget:
@@ -315,6 +326,10 @@ class ToadApp(App, inherit_bindings=False):
         self.ansi_theme_dark = DRACULA_TERMINAL_THEME
         self._settings = settings
         self.settings.set_all()
+
+    def on_mount(self) -> None:
+        if mode := self._initial_mode:
+            self.switch_mode(mode)
 
     def get_default_screen(self) -> MainScreen:
         """Make the default screen.

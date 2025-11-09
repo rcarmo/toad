@@ -1,6 +1,6 @@
 from importlib.metadata import version
-from importlib.resources import files
 
+from textual.binding import Binding
 from textual.screen import Screen
 from textual import work
 from textual import getters
@@ -10,6 +10,7 @@ from textual.content import Content
 from textual import containers
 from textual import widgets
 
+from toad.app import ToadApp
 from toad.pill import pill
 from toad.widgets.mandelbrot import Mandelbrot
 from toad.widgets.grid_select import GridSelect
@@ -33,7 +34,7 @@ QR = """\
 ▀▀▀▀▀▀▀ ▀▀▀  ▀   ▀▀▀▀▀▀▀▀"""
 
 
-class AgentItem(containers.Vertical):
+class AgentItem(containers.VerticalGroup):
     """An entry in the Agent grid select."""
 
     def __init__(self, agent: Agent) -> None:
@@ -55,21 +56,87 @@ class AgentItem(containers.Vertical):
         yield widgets.Static(agent["description"], id="description")
 
 
+class Launcher(containers.VerticalGroup):
+    app = getters.app(ToadApp)
+
+    def __init__(
+        self,
+        agents: dict[str, Agent],
+        *,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+    ) -> None:
+        self._agents = agents
+        super().__init__(name=name, id=id, classes=classes)
+
+    def compose(self) -> ComposeResult:
+        launcher_set = frozenset(
+            self.app.settings.get("launcher.agents", str).splitlines()
+        )
+        agents = self._agents
+        yield widgets.Static("Launcher", classes="heading")
+
+        if launcher_set:
+            with GridSelect(id="launcher", min_column_width=40):
+                for identity in launcher_set:
+                    yield LauncherItem(agents[identity])
+        else:
+            yield widgets.Label("Chose your fighter below!", classes="instruction-text")
+
+
+class LauncherItem(containers.VerticalGroup):
+    """An entry in the Agent grid select."""
+
+    def __init__(self, agent: Agent) -> None:
+        self._agent = agent
+        super().__init__()
+
+    @property
+    def agent(self) -> Agent:
+        return self._agent
+
+    def compose(self) -> ComposeResult:
+        agent = self._agent
+        yield widgets.Label(agent["name"], id="name")
+        yield widgets.Label(agent["author_name"], id="author")
+        yield widgets.Static(agent["description"], id="description")
+
+
 class StoreScreen(Screen):
     CSS_PATH = "store.tcss"
 
-    agents_view = getters.query_one("#agents-view")
+    FOCUS_GROUP = Binding.Group("Focus")
+    BINDINGS = [
+        Binding("tab", "app.focus_next", "Focus Next", group=FOCUS_GROUP),
+        Binding(
+            "shift+tab",
+            "app.focus_previous",
+            "Focus Previous",
+            group=FOCUS_GROUP,
+        ),
+    ]
+
+    agents_view = getters.query_one("#agents-view", GridSelect)
+    launcher = getters.query_one("#launcher", Launcher)
+
+    app = getters.app(ToadApp)
+
+    def __init__(
+        self, name: str | None = None, id: str | None = None, classes: str | None = None
+    ):
+        self._agents: dict[str, Agent] = {}
+        super().__init__(name=name, id=id, classes=classes)
 
     def compose(self) -> ComposeResult:
-        with containers.VerticalScroll():
+        with containers.VerticalScroll(id="container"):
             with containers.VerticalGroup(id="title-container"):
                 with containers.Grid(id="title-grid"):
                     yield Mandelbrot()
                     yield widgets.Label(self.get_info(), id="info")
-                    # yield widgets.Label(QR, id="qr")
-            yield widgets.Static("Agents", classes="heading")
-            yield (agents_view := GridSelect(id="agents-view", min_column_width=40))
-            agents_view.loading = True
+
+            yield widgets.LoadingIndicator()
+
         yield widgets.Footer()
 
     def get_info(self) -> Content:
@@ -103,32 +170,32 @@ class StoreScreen(Screen):
 
         webbrowser.open(url)
 
-    async def update_agents_data(self, agents: list[Agent]) -> None:
-        """Mount an entry for each Agent.
+    def compose_agents(self) -> ComposeResult:
+        agents = self._agents
+        yield Launcher(agents, id="launcher")
 
-        Args:
-            agents: List of Agent dicts
-        """
-        agents_view = self.agents_view
-        if agents:
-            agents = sorted(agents, key=lambda agent: agent["name"].casefold())
-            agent_items = [AgentItem(agent) for agent in agents]
-            await agents_view.mount_all(agent_items)
-            agents_view.highlighted = 0
-        agents_view.loading = False
+        ordered_agents = sorted(
+            agents.values(), key=lambda agent: agent["name"].casefold()
+        )
+        yield widgets.Static("Agents", classes="heading")
+        with GridSelect(id="agents-view", min_column_width=40):
+            for agent in ordered_agents:
+                yield AgentItem(agent)
 
     @on(GridSelect.Selected)
-    def on_grid_select_selected(self, event: GridSelect.Selected):
-        assert isinstance(event.selected_widget, AgentItem)
-        from toad.screens.agent_modal import AgentModal
+    @work
+    async def on_grid_select_selected(self, event: GridSelect.Selected):
+        if isinstance(event.selected_widget, AgentItem):
+            from toad.screens.agent_modal import AgentModal
 
-        self.app.push_screen(AgentModal(event.selected_widget.agent))
+            await self.app.push_screen_wait(AgentModal(event.selected_widget.agent))
+            self.app.save_settings()
 
     @work
     async def on_mount(self) -> None:
-        agents: list[Agent] = []
+        self.app.settings_changed_signal.subscribe(self, self.setting_updated)
         try:
-            agents = await read_agents()
+            self._agents = await read_agents()
         except Exception as error:
             self.notify(
                 f"Failed to read agents data ({error})",
@@ -136,20 +203,18 @@ class StoreScreen(Screen):
                 severity="error",
             )
         else:
-            await self.update_agents_data(agents)
+            await self.query(widgets.LoadingIndicator).remove()
+            await self.query_one("#container").mount_compose(self.compose_agents())
+
+    def setting_updated(self, setting: tuple[str, object]) -> None:
+        key, value = setting
+        if key == "launcher.agents":
+            self.launcher.refresh(recompose=True)
 
 
 if __name__ == "__main__":
-    from textual.app import App
+    from toad.app import ToadApp
 
-    class StoreApp(App):
-        CSS_PATH = "store.tcss"
-        DEFAULT_THEME = "dracula"
+    app = ToadApp(mode="store")
 
-        def on_ready(self) -> None:
-            self.theme = "dracula"
-
-        def get_default_screen(self) -> Screen:
-            return StoreScreen()
-
-    StoreApp().run()
+    app.run()

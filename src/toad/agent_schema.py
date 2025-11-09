@@ -17,19 +17,21 @@ class Command(TypedDict):
 
     description: str
     """Describes what the script will do. For example: 'Install Claude Code'."""
-    commands: list[str]
-    """The script (such as a bash script)."""
+    command: str
+    """Command to run."""
 
 
 class Agent(TypedDict):
     """Describes an agent which Toad can connect to. Currently only Agent Client Protocol is supported."""
 
     identity: str
-    """A unique identifier for this agent useable as a filename. Should be a URL the agent developer owns, although it doesn't have to resolve to anything. For example: 'anthropic.ai/claude'"""
+    """A unique identifier for this agent useable as a filename. Should be a domain the agent developer owns,
+    although it doesn't have to resolve to anything.     
+    For example: 'claude.anthropic.ai'"""
     name: str
     """The name of the agent. For example: 'Claude Code'."""
     short_name: str
-    """A short name, usable on the command line. For example: 'claude'."""
+    """A short name, usable on the command line. Try to make it unique. For example: 'claude'."""
     url: str
     """A URL for the agent."""
     protocol: AgentProtocol
