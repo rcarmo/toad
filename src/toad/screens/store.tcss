@@ -129,3 +129,31 @@ AgentModal {
         }
     }
 }
+
+ActionModal {
+
+    align: center middle;
+    
+
+    #container {
+        margin: 3 6;    
+        height: 1fr;
+        max-height: 24;
+        CommandPane {    
+            padding: 1 1;
+            background: black 10%;          
+            border: tab $primary;                        
+            &.-success {
+                border: tab $text-success 70%;            
+            }
+            &.-fail {
+                border: tab $text-error 50%;            
+            }                        
+        }
+        Button {            
+            width: 100%;
+            
+        }
+    }
+
+}

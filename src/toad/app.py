@@ -4,16 +4,13 @@ import json
 from time import monotonic
 from typing import ClassVar, TYPE_CHECKING
 
-import random
-
 from rich import terminal_theme
 
 from textual.binding import Binding, BindingType
-from textual.content import Content
 from textual.reactive import var, reactive
 from textual.app import App
 from textual.signal import Signal
-from textual.widget import Widget
+
 
 from toad.settings import Schema, Settings
 from toad.settings_schema import SCHEMA
@@ -247,16 +244,6 @@ class ToadApp(App, inherit_bindings=False):
         self.project_dir = project_dir
         self._initial_mode = mode
         super().__init__()
-
-    def get_loading_widget(self) -> Widget:
-        throbber = self.settings.get("ui.throbber", str)
-        if throbber == "quotes":
-            from toad.widgets.future_text import FutureText
-
-            quotes = QUOTES.copy()
-            random.shuffle(quotes)
-            return FutureText([Content(quote) for quote in quotes])
-        return super().get_loading_widget()
 
     @property
     def config_path(self) -> Path:

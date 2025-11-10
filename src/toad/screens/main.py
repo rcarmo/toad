@@ -1,19 +1,22 @@
 from functools import partial
 from pathlib import Path
+import random
 
 from textual import on
 from textual.app import ComposeResult
-from toad.acp import messages as acp_messages
+from textual import getters
 from textual.binding import Binding
 from textual.command import Hit, Hits, Provider, DiscoveryHit
 from textual.content import Content
 from textual.screen import Screen
 from textual.reactive import var, reactive
-from textual import getters
 from textual.widgets import Footer, OptionList, DirectoryTree
 from textual import containers
+from textual.widget import Widget
 
 
+from toad.app import ToadApp
+from toad.acp import messages as acp_messages
 from toad.widgets.plan import Plan
 from toad.widgets.throbber import Throbber
 from toad.widgets.conversation import Conversation
@@ -75,9 +78,22 @@ class MainScreen(Screen, can_focus=False):
     scrollbar = reactive("")
     project_path: var[Path] = var(Path("./").expanduser().absolute())
 
+    app = getters.app(ToadApp)
+
     def __init__(self, project_path: Path) -> None:
         super().__init__()
         self.set_reactive(MainScreen.project_path, project_path)
+
+    def get_loading_widget(self) -> Widget:
+        throbber = self.app.settings.get("ui.throbber", str)
+        if throbber == "quotes":
+            from toad.app import QUOTES
+            from toad.widgets.future_text import FutureText
+
+            quotes = QUOTES.copy()
+            random.shuffle(quotes)
+            return FutureText([Content(quote) for quote in quotes])
+        return super().get_loading_widget()
 
     def compose(self) -> ComposeResult:
         # yield Version("Toad v0.1")

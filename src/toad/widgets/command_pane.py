@@ -1,11 +1,14 @@
 import asyncio
 import codecs
+from dataclasses import dataclass
 
 import os
 import fcntl
 import pty
 import termios
 
+
+from textual.message import Message
 
 from toad.shell_read import shell_read
 from toad.widgets.ansi_log import ANSILog
@@ -28,7 +31,15 @@ class CommandPane(ANSILog):
         self._return_code: int | None = None
         super().__init__(name=name, id=id, classes=classes)
 
-    async def execute(self, command: str) -> None:
+    @property
+    def return_code(self) -> int | None:
+        return self._return_code
+
+    @dataclass
+    class CommandComplete(Message):
+        return_code: int
+
+    def execute(self, command: str) -> None:
         self._execute_task = asyncio.create_task(self._execute(command))
 
     async def _execute(self, command: str) -> None:
@@ -99,6 +110,7 @@ class CommandPane(ANSILog):
         return_code = self._return_code = process.returncode
         self.set_class(return_code == 0, "-success")
         self.set_class(return_code != 0, "-fail")
+        self.post_message(self.CommandComplete(return_code or 0))
 
 
 if __name__ == "__main__":

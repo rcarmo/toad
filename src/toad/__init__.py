@@ -1,7 +1,7 @@
 from typing import Literal
 import platform
 
-type OS = Literal["linux", "macos", "windows", "unknown"]
+type OS = Literal["linux", "macos", "windows", "*"]
 
 _system = platform.system()
 _OS_map: dict[str, OS] = {
@@ -9,4 +9,4 @@ _OS_map: dict[str, OS] = {
     "Darwin": "macos",
     "Windows": "windows",
 }
-os: OS = _OS_map.get(_system, "unknown")
+os: OS = _OS_map.get(_system, "linux")
