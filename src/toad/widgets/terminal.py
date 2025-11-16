@@ -1,6 +1,7 @@
 from textual.cache import LRUCache
-from textual.content import Content
+
 from textual import events
+from textual.reactive import reactive
 from textual.selection import Selection
 from textual.style import Style
 from textual.geometry import Size
@@ -13,6 +14,15 @@ from toad import ansi
 
 class Terminal(ScrollView):
     CURSOR_STYLE = Style.parse("reverse")
+
+    DEFAULT_CSS = """
+    Terminal {
+        overflow: scroll auto;
+        scrollbar-size-horizontal: 0;
+    }
+    """
+
+    hide_cursor = reactive(False)
 
     def __init__(
         self,
@@ -108,7 +118,7 @@ class Terminal(ScrollView):
 
         buffer = state.scrollback_buffer
         buffer_offset = 0
-        if y > len(buffer.folded_lines):
+        if y > len(buffer.folded_lines) and state.alternate_screen:
             buffer_offset = len(buffer.folded_lines)
             buffer = state.alternate_buffer
 
@@ -120,7 +130,11 @@ class Terminal(ScrollView):
             return Strip.blank(width, rich_style)
 
         cache_key: tuple | None = (self.state.alternate_screen, y, updates)
-        if state.show_cursor and buffer.cursor_line == y - buffer_offset:
+        if (
+            not self.hide_cursor
+            and state.show_cursor
+            and buffer.cursor_line == y - buffer_offset
+        ):
             if buffer.cursor_offset >= len(line):
                 line = line.pad_right(buffer.cursor_offset - len(line) + 1)
             line_cursor_offset = buffer.cursor_offset

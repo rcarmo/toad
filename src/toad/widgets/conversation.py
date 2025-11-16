@@ -913,21 +913,22 @@ class Conversation(containers.Vertical):
 
     @work
     async def post_welcome(self) -> None:
+        pass
         # from toad.widgets.welcome import Welcome
 
         # await self.post(Welcome(classes="note", name="welcome"), anchor=False)
 
-        await self.post(
-            Note(f"project directory is [$text-success]'{self.project_path!s}'"),
-            anchor=True,
-        )
+        # await self.post(
+        #     Note(f"project directory is [$text-success]'{self.project_path!s}'"),
+        #     anchor=True,
+        # )
 
-        await self.post(
-            Note(
-                f"project data directory is [$text-success]'{self.project_data_path!s}'"
-            ),
-            anchor=True,
-        )
+        # await self.post(
+        #     Note(
+        #         f"project data directory is [$text-success]'{self.project_data_path!s}'"
+        #     ),
+        #     anchor=True,
+        # )
 
     def watch_agent(self, agent: AgentBase | None) -> None:
         if agent is None:

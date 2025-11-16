@@ -29,18 +29,6 @@ Goose is an open framework for AI agents that goes beyond code suggestions to in
 - **Agent Client Protocol (ACP)**: Native ACP support for editor integration
 - **Multiple Interfaces**: CLI, and ACP server modes
 
-## ACP Integration
-
-Goose works seamlessly with ACP-compatible editors including:
-- Zed
-- Neovim
-- Marimo
-- Any other ACP-enabled development environment
-
-To run Goose as an ACP agent: `goose acp`
-
-This command is automatically invoked by ACP-compatible clients and typically not run directly by users.
-
 ## Configuration
 
 You can override ACP configurations using environment variables:
@@ -55,5 +43,9 @@ You can override ACP configurations using environment variables:
 '''
 
 [actions."*".install]
-command = "curl -fsSL https://block.github.io/goose/install.sh | bash"
+command = "curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash"
 description = "Install Goose"
+
+[action."*".update]
+command = "goose update"
+description = "Update Goose"

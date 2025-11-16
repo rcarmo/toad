@@ -1,0 +1,35 @@
+# Schema defined in agent_schema.py
+# https://www.claude.com/product/claude-code
+
+identity = "openhands.dev"
+name = "OpenHands"
+short_name = "openhands"
+url = "https://openhands.dev/"
+protocol = "acp"
+author_name = "OpenHands"
+author_url = "https://openhands.dev/"
+publisher_name = "Will McGugan"
+publisher_url = "https://willmcgugan.github.io/"
+type = "coding"
+description = "The open platform for cloud coding agents"
+tags = []
+run_command."*" = "echo TODO"
+reccommended = true
+
+help = '''
+# OpenHands
+
+The open platform for cloud coding agents
+
+Scale from one to thousands of agents -- open source, model agnostic, and enterprise-ready.
+
+--- 
+
+TODO
+
+'''
+
+[actions."*".install]
+command = "echo TODO"
+description = "Install OpenHands + ACP adapter"
+

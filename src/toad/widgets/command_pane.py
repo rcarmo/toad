@@ -118,6 +118,7 @@ class CommandPane(Terminal):
         self.set_class(return_code == 0, "-success")
         self.set_class(return_code != 0, "-fail")
         self.post_message(self.CommandComplete(return_code or 0))
+        self.hide_cursor = True
 
 
 if __name__ == "__main__":
@@ -126,6 +127,8 @@ if __name__ == "__main__":
     COMMAND = """htop"""
     # COMMAND = "uv run python -m textual"
     # COMMAND = "uv run python"
+
+    COMMAND = "ls -al"
 
     class CommandApp(App):
         CSS = """

@@ -916,8 +916,10 @@ class Buffer:
     """Folded line offset."""
 
     max_line_width: int = 0
+    """The longest line in the buffer."""
 
     updates: int = 0
+    """Updates count (used in caching)."""
 
     @property
     def line_count(self) -> int:
@@ -1076,18 +1078,23 @@ class TerminalState:
             buffer.folded_lines.extend(line_record.folds)
 
         # After reflow, we need to work out where the cursor is within the folded lines
-        line = buffer.lines[cursor_line]
-        fold_cursor_line = buffer.line_to_fold[cursor_line]
+        # cursor_line = min(cursor_line, len(buffer.lines) - 1)
+        if cursor_line >= len(buffer.lines):
+            buffer.cursor_line = len(buffer.lines)
+            buffer.cursor_offset = 0
+        else:
+            line = buffer.lines[cursor_line]
+            fold_cursor_line = buffer.line_to_fold[cursor_line]
 
-        fold_cursor_offset = 0
-        for fold in reversed(line.folds):
-            if cursor_offset >= fold.offset:
-                fold_cursor_line += fold.line_offset
-                fold_cursor_offset = cursor_offset - fold.offset
-                break
+            fold_cursor_offset = 0
+            for fold in reversed(line.folds):
+                if cursor_offset >= fold.offset:
+                    fold_cursor_line += fold.line_offset
+                    fold_cursor_offset = cursor_offset - fold.offset
+                    break
 
-        buffer.cursor_line = fold_cursor_line
-        buffer.cursor_offset = fold_cursor_offset
+            buffer.cursor_line = fold_cursor_line
+            buffer.cursor_offset = fold_cursor_offset
 
     def write(self, text: str) -> None:
         """Write to the terminal.

@@ -18,52 +18,34 @@ run_command."*" = "npx -y amp-acp"
 help = '''
 # Amp (AmpCode)
 
-**Bridge the Amp CLI to any ACP-compatible editor**
+Amp is a frontier coding agent for your terminal and editor, built by Sourcegraph.
 
-The Amp ACP adapter streams the Amp CLI over the Agent Client Protocol so you can use Amp inside Zed and other ACP clients. The adapter is published as the open-source `amp-acp` package.
+- **Multi-Model** Sonnet, GPT-5, fast models—Amp uses them all, for what each model is best at.
+- **Opinionated** You're always using the good parts of Amp. If we don't use and love a feature, we kill it.
+- **On the Frontier** Amp goes where the models take it. No backcompat, no legacy features.
+- **Threads** You can save and share your interactions with Amp. You wouldn't code without version control, would you?
 
 ## Prerequisites
 
-- Install the Amp CLI from https://ampcode.com and authenticate with `amp login`
 - Node.js 18+ so `npx` can run the adapter
 - Ensure the `AMP_EXECUTABLE` environment variable points at your Amp binary (or place `amp` on `PATH`)
 
-## Usage
-
-```bash
-AMP_EXECUTABLE=/usr/local/bin/amp AMP_PREFER_SYSTEM_PATH=1 npx -y amp-acp
-```
-
-The adapter streams Amp's JSON responses over ACP, letting your editor drive Amp Conversations. `AMP_PREFER_SYSTEM_PATH=1` lets the adapter reuse your system `amp` install instead of downloading another copy.
-
-## Editor configuration (Zed example)
-
-```json
-{
-  "agent_servers": {
-    "Amp": {
-      "command": "npx",
-      "args": ["-y", "amp-acp"],
-      "env": {
-        "AMP_EXECUTABLE": "/usr/local/bin/amp",
-        "AMP_PREFER_SYSTEM_PATH": "1"
-      }
-    }
-  }
-}
-```
-
-After configuring the agent, open the ACP panel in Zed (cmd-?/ctrl-?) to start chatting with Amp.
 
 ---
+
+## ACP adapter for AmpCode
 
 **Repository**: https://github.com/tao12345666333/amp-acp
 '''
 
 [actions."*".install]
-command = "curl -fsSL https://ampcode.com/install.sh | bash"
-description = "Install AMP code"
+command = "curl -fsSL https://ampcode.com/install.sh | bash && npm install -g amp-acp"
+description = "Install AMP Code"
 
 [actions."*".install_adapter]
 command = "npm install -g amp-acp"
 description = "Install the Amp ACP adapter"
+
+[actions."*".login]
+command = "amp login"
+description = "Login to Amp (run once)"

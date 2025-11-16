@@ -65,6 +65,8 @@ class AgentItem(containers.VerticalGroup):
 
 
 class LauncherGridSelect(GridSelect):
+    BINDING_GROUP_TITLE = "Launcher"
+
     app = getters.app(ToadApp)
     BINDINGS = [
         Binding("enter", "select", "Details", tooltip="Open agent details"),
@@ -164,10 +166,18 @@ class LauncherItem(containers.VerticalGroup):
 
 
 class AgentGridSelect(GridSelect):
+    BINDING_GROUP_TITLE = "Agent Select"
+
     BINDINGS = [Binding("enter", "select", "Details", tooltip="Open agent details")]
 
 
+class Container(containers.VerticalScroll):
+    BINDING_GROUP_TITLE = "View"
+
+
 class StoreScreen(Screen):
+    BINDING_GROUP_TITLE = "Screen"
+
     CSS_PATH = "store.tcss"
 
     FOCUS_GROUP = Binding.Group("Focus")
@@ -212,10 +222,10 @@ class StoreScreen(Screen):
             with containers.Grid(id="title-grid"):
                 yield Mandelbrot()
                 yield widgets.Label(self.get_info(), id="info")
-        with containers.VerticalScroll(id="container"):
-            pass
 
-            # yield widgets.LoadingIndicator()
+        yield Container(id="container")
+
+        # yield widgets.LoadingIndicator()
         yield widgets.Footer()
 
     def get_info(self) -> Content:
@@ -257,13 +267,13 @@ class StoreScreen(Screen):
             agents.values(), key=lambda agent: agent["name"].casefold()
         )
 
-        recommended_agents = [
+        reccommended_agents = [
             agent for agent in ordered_agents if agent.get("reccommended", False)
         ]
-        if recommended_agents:
-            yield widgets.Static("Reccomended Agents", classes="heading")
+        if reccommended_agents:
+            yield widgets.Static("Reccommended Agents", classes="heading")
             with AgentGridSelect(id="reccommended-agents-view", min_column_width=40):
-                for agent in recommended_agents:
+                for agent in reccommended_agents:
                     yield AgentItem(agent)
 
         yield widgets.Static("All agents", classes="heading")
