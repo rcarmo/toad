@@ -97,7 +97,7 @@ class CommandPane(Terminal):
 
         # Create write transport
         writer_protocol = asyncio.BaseProtocol()
-        write_transport, _ = await loop.connect_write_pipe(
+        self.write_transport, _ = await loop.connect_write_pipe(
             lambda: writer_protocol,
             os.fdopen(os.dup(master), "wb", 0),
         )
@@ -120,15 +120,22 @@ class CommandPane(Terminal):
         self.post_message(self.CommandComplete(return_code or 0))
         self.hide_cursor = True
 
+    def write_stdin(self, stdin_bytes: bytes) -> None:
+        self.write_transport.write(stdin_bytes)
+
+    def write_process_stdin(self, input: str) -> None:
+        stdin_bytes = input.encode("utf-8")
+        self.write_transport.write(stdin_bytes)
+
 
 if __name__ == "__main__":
     from textual.app import App, ComposeResult
 
     COMMAND = """htop"""
     # COMMAND = "uv run python -m textual"
-    # COMMAND = "uv run python"
+    COMMAND = "uv run python"
 
-    COMMAND = "python test_scroll.py"
+    # COMMAND = "python test_scroll.py"
 
     class CommandApp(App):
         CSS = """

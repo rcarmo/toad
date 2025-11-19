@@ -9,10 +9,12 @@ from textual.scroll_view import ScrollView
 from textual.strip import Strip
 from textual.timer import Timer
 
+from textual import keys
+
 from toad import ansi
 
 
-class Terminal(ScrollView):
+class Terminal(ScrollView, can_focus=True):
     CURSOR_STYLE = Style.parse("reverse")
 
     DEFAULT_CSS = """
@@ -182,6 +184,16 @@ class Terminal(ScrollView):
         strip = strip.apply_offsets(x + offset, line_no)
 
         return strip
+
+    def on_key(self, event: events.Key):
+        if event.key == "enter":
+            self.write_process_stdin("\n")
+        else:
+            if (stdin := self.state.key_event_to_stdin(event)) is not None:
+                self.write_process_stdin(stdin)
+
+    def write_process_stdin(self, input: str) -> None:
+        pass
 
 
 if __name__ == "__main__":
