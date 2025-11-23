@@ -4,6 +4,7 @@ import re
 
 import rich.repr
 
+from textual.cache import LRUCache
 from typing import Callable, Generator, Iterable
 
 type TokenMatch = tuple[str, str]
@@ -211,6 +212,7 @@ class StreamParser[ParseType]:
     def __init__(self):
         self._gen = self.parse()
         self._reading: StreamRead | ParseType = next(self._gen)
+        self._cache = LRUCache(1024 * 4)
 
     def read(self, count: int) -> Read:
         """Read a specific number of bytes.
@@ -251,6 +253,12 @@ class StreamParser[ParseType]:
         return ReadPatterns(start, **patterns)
 
     def feed(self, text: str) -> Iterable[Token | ParseType]:
+        sequences = text.splitlines(keepends=True)
+        # TODO: Cache
+        for sequence in sequences:
+            yield from self._feed(sequence)
+
+    def _feed(self, text: str) -> Iterable[Token | ParseType]:
         """Feed text in to parser.
 
         Args:

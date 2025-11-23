@@ -388,9 +388,13 @@ class ANSIStream:
         Yields:
             `ANSICommand` isntances.
         """
+
         for token in self.parser.feed(text):
             if not isinstance(token, Token):
                 yield from self.on_token(token)
+        # # from textual import log
+        # print(self._cache.hits, self._cache.misses)
+        # # log(dict(self._cache))
 
     ANSI_SEPARATORS = {
         "\n": ANSICursor(delta_y=+1, absolute_x=0),
