@@ -1358,7 +1358,8 @@ class TerminalState:
         if line_length <= width:
             return [LineFold(line_no, 0, 0, line, updates)]
 
-        folded_lines = self._wrap_content(line, width)
+        # folded_lines = self._wrap_content(line, width)
+        folded_lines = line.fold(width)
         offsets = [0, *accumulate(len(line) for line in folded_lines)][:-1]
 
         folds = [

@@ -180,8 +180,8 @@ if __name__ == "__main__":
 
     COMMAND = "htop"
     # COMMAND = "uv run python test_ind.py"
-    COMMAND = os.environ["SHELL"]
-    # COMMAND = "python test_flow.py"
+    # COMMAND = os.environ["SHELL"]
+    COMMAND = "python test_flow.py"
 
     class CommandApp(App):
         CSS = """
