@@ -63,9 +63,8 @@ class AgentItem(containers.VerticalGroup):
         agent = self._agent
         with containers.Grid():
             yield widgets.Label(agent["name"], id="name")
-            yield widgets.Label(
-                pill(agent["type"], "$primary-muted", "$text-primary"), id="type"
-            )
+            tag = pill(agent["type"], "$secondary-muted", "$text-primary")
+            yield widgets.Label(tag, id="type")
         yield widgets.Label(agent["author_name"], id="author")
         yield widgets.Static(agent["description"], id="description")
 
@@ -142,17 +141,17 @@ class Launcher(containers.VerticalGroup):
             self.app.settings.get("launcher.agents", str).splitlines()
         )
         agents = self._agents
+        self.set_class(not launcher_set, "-empty")
+        with LauncherGridSelect(
+            id="launcher-grid-select", min_column_width=32, max_column_width=32
+        ):
+            for digit, identity in zip_longest(self.DIGITS, launcher_set):
+                if identity is None:
+                    break
+                yield LauncherItem(digit or "", agents[identity])
 
-        if launcher_set:
-            with LauncherGridSelect(
-                id="launcher-grid-select", min_column_width=32, max_column_width=32
-            ):
-                for digit, identity in zip_longest(self.DIGITS, launcher_set):
-                    if identity is None:
-                        break
-                    yield LauncherItem(digit or "", agents[identity])
-        else:
-            yield widgets.Label("Chose your fighter below!", classes="instruction-text")
+        if not launcher_set:
+            yield widgets.Label("Chose your fighter below!", classes="no-agents")
 
 
 class LauncherItem(containers.VerticalGroup):
@@ -254,8 +253,6 @@ class StoreScreen(Screen):
                 yield widgets.Label(self.get_info(), id="info")
 
         yield Container(id="container")
-
-        # yield widgets.LoadingIndicator()
         yield widgets.Footer()
 
     def get_info(self) -> Content:
@@ -298,21 +295,31 @@ class StoreScreen(Screen):
             agents.values(), key=lambda agent: agent["name"].casefold()
         )
 
-        reccommended_agents = [
-            agent for agent in ordered_agents if agent.get("reccommended", False)
+        recommended_agents = [
+            agent for agent in ordered_agents if agent.get("recommended", False)
         ]
-        if reccommended_agents:
-            yield widgets.Static("Reccommended Agents", classes="heading")
-            with AgentGridSelect(id="reccommended-agents-view", min_column_width=40):
-                for agent in reccommended_agents:
+        if recommended_agents:
+            with containers.VerticalGroup(id="sponsored-agents", classes="recommended"):
+                yield widgets.Static("Recommended Agents", classes="heading")
+                with AgentGridSelect(classes="agents-picker", min_column_width=40):
+                    for agent in recommended_agents:
+                        yield AgentItem(agent)
+
+        coding_agents = [agent for agent in ordered_agents if agent["type"] == "coding"]
+        if coding_agents:
+            yield widgets.Static("Coding agents", classes="heading")
+            with AgentGridSelect(classes="agents-picker", min_column_width=40):
+                for agent in coding_agents:
                     yield AgentItem(agent)
 
-        yield widgets.Static("All agents", classes="heading")
-        with AgentGridSelect(id="agents-view", min_column_width=40):
-            for agent in ordered_agents:
-                yield AgentItem(agent)
+        chat_bots = [agent for agent in ordered_agents if agent["type"] == "chat"]
+        if chat_bots:
+            yield widgets.Static("Chat & more", classes="heading")
+            with AgentGridSelect(classes="agents-picker", min_column_width=40):
+                for agent in chat_bots:
+                    yield AgentItem(agent)
 
-    @on(GridSelect.Selected, "#agents-view,#reccommended-agents-view")
+    @on(GridSelect.Selected, ".agents-picker")
     @work
     async def on_grid_select_selected(self, event: GridSelect.Selected):
         assert isinstance(event.selected_widget, AgentItem)
@@ -369,10 +376,7 @@ class StoreScreen(Screen):
                 severity="error",
             )
         else:
-            # await self.query(widgets.LoadingIndicator).remove()
             await self.query_one("#container").mount_compose(self.compose_agents())
-            self.launcher.focus()
-            self.launcher.highlighted = 0
 
     def setting_updated(self, setting: tuple[str, object]) -> None:
         key, value = setting

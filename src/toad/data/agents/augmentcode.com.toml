@@ -13,7 +13,7 @@ publisher_url = "https://willmcgugan.github.io/"
 type = "coding"
 description = "An AI agent that brings Augment Code's power to the terminal with ACP support for Zed, Neovim, and Emacs."
 tags = []
-run_command."*" = "auggie acp"
+run_command."*" = "auggie --acp"
 
 help = '''
 # Auggie (Augment Code)

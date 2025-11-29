@@ -31,7 +31,8 @@ async def read_agents() -> dict[str, Agent]:
         try:
             for file in files("toad.data").joinpath("agents").iterdir():
                 agent: Agent = tomllib.load(file.open("rb"))
-                agents.append(agent)
+                if agent.get("active", True):
+                    agents.append(agent)
 
         except Exception as error:
             raise AgentReadError(f"Failed to read agents; {error}")

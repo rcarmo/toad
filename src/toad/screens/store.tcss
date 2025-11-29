@@ -65,10 +65,23 @@ StoreScreen {
                 background: $panel;
                 border: tall $primary;
             }
-        } 
-        
+        }         
 
     }
+
+    #sponsored-agents {
+        # background: black 15%;
+        # border-top: wide white 10%;
+        # border-bottom: wide white 10%;
+        
+        GridSelect {
+
+            margin:0 1;
+            grid-gutter: 1;
+            keyline: thin white 10%;
+        }
+    }
+   
 
     AgentItem {
         height: auto;               
@@ -98,6 +111,16 @@ StoreScreen {
         GridSelect {
             width: 1fr;            
         }
+        &.-empty {
+            LauncherGridSelect {
+                visibility: hidden;
+            }
+        }
+        .no-agents {
+            text-style: dim italic;
+            padding: 1 2;
+        }
+            
     }
 
     LauncherItem {

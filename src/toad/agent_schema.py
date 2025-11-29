@@ -28,6 +28,8 @@ class Agent(TypedDict):
 
     """
 
+    active: NotRequired[bool]
+    """If `True` (default), the agent will be shown in the UI. If `False` the agent will be removed from the UI."""
     identity: str
     """A unique identifier for this agent. Should be a domain the agent developer owns,
     although it doesn't have to resolve to anything. Must be useable in a filename on all platforms. 
@@ -51,7 +53,7 @@ class Agent(TypedDict):
     publisher_url: str
     """The publisher's url."""
     description: str
-    """A description of the agent. A few sentences max."""
+    """A description of the agent. A few sentences max. May contain content markup (https://textual.textualize.io/guide/content/#markup) if used subtly."""
     tags: list[Tag]
     """Tags which identify the agent. Should be empty for now."""
 
@@ -64,5 +66,5 @@ class Agent(TypedDict):
     actions: dict[OS, dict[Action, Command]]
     """Scripts to perform actions, typically at least to install the agent."""
 
-    reccomended: NotRequired[bool]
-    """Agent is in reccomended set."""
+    recommended: NotRequired[bool]
+    """Agent is in recommended set."""

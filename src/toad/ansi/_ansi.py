@@ -1075,7 +1075,7 @@ class TerminalState:
         print("CLEAR", clear)
         buffer = self.buffer
         line_count = len(buffer.lines)
-        height = min(line_count, self.height)
+
         if clear == "screen":
             buffer.clear(self.advance_updates())
             style = self.style
@@ -1085,12 +1085,7 @@ class TerminalState:
             buffer._updated_lines = None
             folded_cursor_line = buffer.cursor_line
             cursor_line, cursor_line_offset = buffer.cursor
-            print("cursor line and offset", cursor_line, cursor_line_offset)
             line = buffer.lines[cursor_line]
-            # line.content = line.content[:cursor_line_offset]
-            # line.folds[:] = self._fold_line(cursor_line, line.content, self.width)
-            # line.updates = self.advance_updates()
-
             del buffer.lines[cursor_line + 1 :]
             del buffer.line_to_fold[cursor_line + 1 :]
             del buffer.folded_lines[folded_cursor_line + 1 :]

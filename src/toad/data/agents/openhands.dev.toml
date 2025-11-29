@@ -14,7 +14,7 @@ type = "coding"
 description = "The open platform for cloud coding agents"
 tags = []
 run_command."*" = "echo TODO"
-reccommended = true
+recommended = true
 
 help = '''
 # OpenHands

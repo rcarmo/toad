@@ -10,12 +10,18 @@ def main(ctx):
     """Toad. The Batrachian AI."""
     if ctx.invoked_subcommand is not None:
         return
-    app = ToadApp()
+    app = ToadApp(mode="store")
     app.run()
 
 
 @main.command("acp")
 @click.argument("command", metavar="COMMAND")
+@click.option(
+    "--title",
+    metavar="TITLE",
+    help="Optional title to display in the status bar",
+    default=None,
+)
 @click.option("--project-dir", metavar="PATH", default=None)
 @click.option(
     "--port",
@@ -32,7 +38,12 @@ def main(ctx):
 )
 @click.option("--serve", is_flag=True, help="Serve Toad as a web application")
 def acp(
-    command: str, host: str, port: int, project_dir: str | None, serve: bool = False
+    command: str,
+    host: str,
+    port: int,
+    title: str | None,
+    project_dir: str | None,
+    serve: bool = False,
 ) -> None:
     """Run an ACP client."""
 
@@ -40,7 +51,7 @@ def acp(
 
     agent_data: AgentData = {
         "identity": "toad.custom",
-        "name": command,
+        "name": title or command.partition(" ")[0],
         "short_name": "agent",
         "url": "https://github.com/textualize/toad",
         "protocol": "acp",
