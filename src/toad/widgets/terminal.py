@@ -289,6 +289,11 @@ class Terminal(ScrollView, can_focus=True):
         if (stdin := self.state.key_event_to_stdin(event)) is not None:
             self.write_process_stdin(stdin)
 
+    def on_paste(self, event: events.Paste) -> None:
+        for character in event.text:
+            print(repr(character))
+            self.write_process_stdin(character)
+
     def write_process_stdin(self, input: str) -> None:
         pass
 

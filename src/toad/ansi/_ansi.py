@@ -775,6 +775,15 @@ class Buffer:
 
         return (line_no, position)
 
+    def update_line(self, line_no: int) -> None:
+        """Record an updated line.
+
+        Args:
+            line_no: Line number to update.
+        """
+        if self._updated_lines is not None:
+            self._updated_lines.add(line_no)
+
     def clear(self, updates: int) -> None:
         """Clear the buffer to its initial state.
 
@@ -1074,7 +1083,6 @@ class TerminalState:
     def clear_buffer(self, clear: ClearType) -> None:
         print("CLEAR", clear)
         buffer = self.buffer
-        line_count = len(buffer.lines)
 
         if clear == "screen":
             buffer.clear(self.advance_updates())
@@ -1089,8 +1097,9 @@ class TerminalState:
             del buffer.lines[cursor_line + 1 :]
             del buffer.line_to_fold[cursor_line + 1 :]
             del buffer.folded_lines[folded_cursor_line + 1 :]
-
             self.update_line(buffer, cursor_line, line.content[:cursor_line_offset])
+        else:
+            print(f"TODO: clear_buffer({clear!r})")
 
     def scroll_buffer(self, direction: int, lines: int) -> None:
         """Scroll the buffer.
@@ -1233,9 +1242,11 @@ class TerminalState:
                         buffer.updates = self.advance_updates()
 
                 if delta_x is not None:
+                    buffer.update_line(buffer.cursor_line)
                     buffer.cursor_offset += delta_x
                     while buffer.cursor_offset > self.width:
                         buffer.cursor_line += 1
+                        buffer.update_line(buffer.cursor_line)
                         buffer.cursor_offset -= self.width
                 if absolute_x is not None:
                     buffer.cursor_offset = absolute_x
