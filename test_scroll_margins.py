@@ -11,7 +11,7 @@ print_slow("\033[2J\033[H")
 
 # Fill screen with numbered lines
 for i in range(1, 25):
-    sys.stdout.write(f"Line {i:02d}\n")
+    sys.stdout.write(f"Line {i-1:02d}\n")
     sys.stdout.flush()
 
 # Set scroll region to lines 5-15

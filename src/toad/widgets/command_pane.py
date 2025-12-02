@@ -169,6 +169,7 @@ if __name__ == "__main__":
     # COMMAND = "python test_input.py"
 
     COMMAND = "htop"
+    COMMAND = "python test_scroll_margins.py"
 
     class CommandApp(App):
         CSS = """

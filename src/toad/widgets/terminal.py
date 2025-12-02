@@ -106,6 +106,10 @@ class Terminal(ScrollView, can_focus=True):
         """Height of the terminal."""
         return self._height
 
+    @property
+    def size(self) -> Size:
+        return Size(self.width, self.height)
+
     def set_state(self, state: ansi.TerminalState) -> None:
         """Set the terminal state, if this terminal is to inherit an existing state.
 

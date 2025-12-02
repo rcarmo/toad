@@ -118,14 +118,6 @@ class Shell:
         flags = fcntl.fcntl(master, fcntl.F_GETFL)
         fcntl.fcntl(master, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
-        # # Get terminal attributes
-        # attrs = termios.tcgetattr(slave)
-        # # Disable echo (ECHO flag)
-        # attrs[3] &= ~termios.ECHO
-        # attrs[0] |= termios.ISIG
-        # # Apply the changes
-        # termios.tcsetattr(slave, termios.TCSANOW, attrs)
-
         env = os.environ.copy()
         env["FORCE_COLOR"] = "1"
         env["TTY_COMPATIBLE"] = "1"
@@ -173,10 +165,19 @@ class Shell:
         self.writer = write_transport
 
         if shell_start := self.shell_start.strip():
+            # Get terminal attributes
+
+            old_settings = termios.tcgetattr(self.master)
+            new_settings = termios.tcgetattr(self.master)
+            new_settings[3] = new_settings[3] & ~termios.ECHO  # lflag is at index 3
+            termios.tcsetattr(self.master, termios.TCSADRAIN, new_settings)
+
             shell_start = self.shell_start.strip()
             if not shell_start.endswith("\n"):
                 shell_start += "\n"
             self.writer.write(shell_start.encode("utf-8"))
+
+            termios.tcsetattr(slave, termios.TCSADRAIN, old_settings)
 
         unicode_decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
 

@@ -180,6 +180,8 @@ class ToolCall(containers.VerticalGroup):
                 expand_icon = Content("▼ ")
             else:
                 expand_icon = Content("▶ ")
+        else:
+            expand_icon = Content.styled("▶ ", "dim")
 
         # header = Content.assemble(
         #     expand_icon,

@@ -402,8 +402,6 @@ class Agent(AgentBase):
                     tasks.discard(task)
 
         while line := await process.stdout.readline():
-            print("READ LINE bytes", repr(line))
-            print("READ LINE utf8", repr(line.decode("utf-8")))
             # This line should contain JSON, which may be:
             #   A) a JSONRPC request
             #   B) a JSONRPC response to a previous request
