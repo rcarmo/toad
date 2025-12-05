@@ -67,7 +67,7 @@ class ActionModal(ModalScreen):
         if self._bootstrap_uv and shutil.which("uv") is None:
             # Bootstrap UV if required
             self.command_pane.write(f"$ {UV_INSTALL}\n")
-            await self.command_pane.execute(UV_INSTALL)
+            await self.command_pane.execute(UV_INSTALL, final=False)
 
         self.command_pane.write(f"$ {self._command}\n")
         await self.command_pane.execute(self._command)

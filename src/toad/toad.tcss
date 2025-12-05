@@ -596,9 +596,9 @@ Explain {
 Footer {
     background: transparent;
     .footer-key--key {
-        color: $text-warning;
+        color: $text;
         background: transparent;
-        text-style: not bold;
+        # text-style: not bold;
         padding: 0 1;        
     }
 
@@ -645,8 +645,12 @@ HelpPanel {
             color: $text-muted;
         }
         .bindings-table--key {
+            color: $text;
+            # text-style: not bold;
+        }
+        &> BindingsTable > .bindings-table--header {        
             color: $text-warning;
-            text-style: not bold;
+            text-style: underline;
         }
     }
 }

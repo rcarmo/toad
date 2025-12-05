@@ -49,8 +49,8 @@ class CommandPane(Terminal):
     class CommandComplete(Message):
         return_code: int
 
-    def execute(self, command: str) -> asyncio.Task:
-        self._execute_task = asyncio.create_task(self._execute(command))
+    def execute(self, command: str, *, final: bool = True) -> asyncio.Task:
+        self._execute_task = asyncio.create_task(self._execute(command, final=final))
         return self._execute_task
 
     def on_resize(self, event: events.Resize):
@@ -79,7 +79,7 @@ class CommandPane(Terminal):
         lflag = attrs[3]
         return bool(lflag & termios.ICANON)
 
-    async def _execute(self, command: str) -> None:
+    async def _execute(self, command: str, *, final: bool = True) -> None:
         # width, height = self.scrollable_content_region.size
 
         await self.wait_for_refresh()
@@ -149,13 +149,11 @@ class CommandPane(Terminal):
 
         await process.wait()
         return_code = self._return_code = process.returncode
-        self.set_class(return_code == 0, "-success")
-        self.set_class(return_code != 0, "-fail")
+        if final:
+            self.set_class(return_code == 0, "-success")
+            self.set_class(return_code != 0, "-fail")
         self.post_message(self.CommandComplete(return_code or 0))
         self.hide_cursor = True
-
-    # def write_stdin(self, stdin_bytes: bytes) -> None:
-    #     self.write_transport.write(stdin_bytes)
 
     def write_process_stdin(self, input: str) -> None:
         stdin_bytes = input.encode("utf-8")

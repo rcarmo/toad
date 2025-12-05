@@ -405,6 +405,7 @@ class Agent(AgentBase):
             # This line should contain JSON, which may be:
             #   A) a JSONRPC request
             #   B) a JSONRPC response to a previous request
+            print(repr(line))
             if not line.strip():
                 continue
 

@@ -1,3 +1,4 @@
+from contextlib import suppress
 from dataclasses import dataclass
 from importlib.metadata import version
 from itertools import zip_longest
@@ -202,9 +203,7 @@ class Container(containers.VerticalScroll):
 
 class StoreScreen(Screen):
     BINDING_GROUP_TITLE = "Screen"
-
     CSS_PATH = "store.tcss"
-
     FOCUS_GROUP = Binding.Group("Focus")
     BINDINGS = [
         Binding(
@@ -377,6 +376,8 @@ class StoreScreen(Screen):
             )
         else:
             await self.query_one("#container").mount_compose(self.compose_agents())
+            with suppress(NoMatches):
+                self.query("GridSelect").first().focus()
 
     def setting_updated(self, setting: tuple[str, object]) -> None:
         key, value = setting

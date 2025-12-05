@@ -13,7 +13,7 @@ publisher_url = "https://willmcgugan.github.io/"
 type = "coding"
 description = "The open platform for cloud coding agents"
 tags = []
-run_command."*" = "openhands-acp"
+run_command."*" = "uvx openhands acp"
 recommended = true
 
 help = '''
