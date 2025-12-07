@@ -70,7 +70,7 @@ class Terminal(ScrollView, can_focus=True):
         self.minimum_terminal_width = minimum_terminal_width
         self._get_terminal_dimensions = get_terminal_dimensions
 
-        self.state = ansi.TerminalState()
+        self.state = ansi.TerminalState(self.write_process_stdin)
 
         if size is None:
             self._width = minimum_terminal_width or 80

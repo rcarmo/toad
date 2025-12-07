@@ -147,6 +147,7 @@ class CommandPane(Terminal):
                         print(repr(line))
                         print(error)
                         from traceback import print_exc
+
                         print_exc()
 
                 if not data:
@@ -176,7 +177,7 @@ if __name__ == "__main__":
     # COMMAND = "htop"
     # COMMAND = "python test_scroll_margins.py"
 
-    COMMAND = "claude"
+    COMMAND = "python cpr.py"
 
     class CommandApp(App):
         CSS = """

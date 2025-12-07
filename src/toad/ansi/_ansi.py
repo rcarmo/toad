@@ -6,7 +6,7 @@ import re
 
 from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import Iterable, Literal, Mapping, NamedTuple
+from typing import Any, Callable, Iterable, Literal, Mapping, NamedTuple
 
 import rich.repr
 
@@ -345,6 +345,11 @@ class ANSICharacterSet(NamedTuple):
     dec_invoke: DECInvoke | None = None
 
 
+@rich.repr.auto
+class ANSICursorPositionRequest(NamedTuple):
+    pass
+
+
 type ANSICommand = (
     ANSIStyle
     | ANSIContent
@@ -357,6 +362,7 @@ type ANSICommand = (
     | ANSICharacterSet
     | ANSIFeatures
     | ANSIMouseTracking
+    | ANSICursorPositionRequest
 )
 
 
@@ -558,6 +564,9 @@ class ANSIStream:
                         else cls.DISABLE_REPLACE_MODE
                     )
 
+                case ["6", _, "n"]:
+                    print("CPR")
+
                 case _:
                     print("Unknown CSI (a)", repr(csi))
                     return None
@@ -627,6 +636,8 @@ class ANSIStream:
                         print("Unknown CSI (b)", repr(csi))
                         return None
 
+        if csi == "[6n":
+            return ANSICursorPositionRequest()
         print("Unknown CSI (c)", repr(csi))
         return None
 
@@ -936,12 +947,16 @@ class MouseTracking:
 class TerminalState:
     """Abstract terminal state."""
 
-    def __init__(self, width: int = 80, height: int = 24) -> None:
+    def __init__(
+        self, write_stdin: Callable[[str], Any], *, width: int = 80, height: int = 24
+    ) -> None:
         """
         Args:
             width: Initial width.
             height: Initial height.
         """
+        self._write_stdin: Callable[[str], Any] | None = write_stdin
+
         self._ansi_stream = ANSIStream()
         """ANSI stream processor."""
 
@@ -991,6 +1006,12 @@ class TerminalState:
         yield "auto_wrap", self.auto_wrap, True
         yield "dec_state", self.dec_state
         yield "mouse_tracking", self.mouse_tracking, None
+
+    def write_stdin(self, text: str) -> bool:
+        if self._write_stdin is not None:
+            self._write_stdin(text)
+            return False
+        return True
 
     @property
     def screen_start_line_no(self) -> int:
@@ -1448,6 +1469,11 @@ class TerminalState:
                     mouse_tracking.focus_events = focus_events
                 if alternate_scroll is not None:
                     mouse_tracking.alternate_scroll = alternate_scroll
+
+            case ANSICursorPositionRequest():
+                row = self.buffer.cursor_line + 1
+                column = self.buffer.cursor_offset + 1
+                self.write_stdin(f"[{row};{column}R")
 
             case _:
                 print("Unhandled", ansi_command)
