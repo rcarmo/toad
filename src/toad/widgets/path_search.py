@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from functools import partial
-from os import PathLike
+
 from operator import itemgetter
 from pathlib import Path
 import re
-from typing import Callable, Iterable, Sequence
+from typing import Sequence
 
 import pathspec.patterns
 from pathspec import PathSpec
@@ -18,8 +17,8 @@ from textual import getters
 from textual import containers
 from textual.reactive import var, Initialize
 from textual.content import Content, Span
-
 from textual.fuzzy import FuzzySearch
+from textual.widget import Widget
 from textual.widgets import OptionList, Input
 from textual.widgets.option_list import Option
 
@@ -162,6 +161,11 @@ class PathSearch(containers.VerticalGroup):
         self.root = root
         self.paths = paths
         self.loading = False
+
+    def get_loading_widget(self) -> Widget:
+        from textual.widgets import LoadingIndicator
+
+        return LoadingIndicator()
 
     def highlight_path(self, path: str) -> Content:
         if path.startswith("."):
