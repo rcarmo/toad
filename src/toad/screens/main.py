@@ -100,7 +100,6 @@ class MainScreen(Screen, can_focus=False):
         return super().get_loading_widget()
 
     def compose(self) -> ComposeResult:
-        # yield Version("Toad v0.1")
         with containers.Center():
             yield SideBar(
                 SideBar.Panel("Plan", Plan([])),

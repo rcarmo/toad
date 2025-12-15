@@ -856,6 +856,11 @@ class Conversation(containers.Vertical):
         if (mode := self.modes.get(mode_id)) is not None:
             self.current_mode = mode
             return True
+        self.notify(
+            f"Node mode called '{mode_id}'",
+            title="Error setting mode",
+            severity="error",
+        )
         return False
 
     @on(acp_messages.SetModes)
