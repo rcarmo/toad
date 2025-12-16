@@ -1151,7 +1151,7 @@ class Conversation(containers.Vertical):
             16,
             (self.window.size.width - 2 - self.window.styles.scrollbar_size_vertical),
         )
-        terminal_height = max(8, self.window.scrollable_content_region.height - 6)
+        terminal_height = max(8, self.window.scrollable_content_region.height - 4)
         return terminal_width, terminal_height
 
     @property
