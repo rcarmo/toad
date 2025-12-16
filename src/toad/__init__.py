@@ -1,7 +1,3 @@
-import os
-
-os.environ["PYTHONWARNINGS"] = "ignore::SyntaxWarning"
-
 from typing import Literal, Mapping
 import platform
 

@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timezone
 from functools import cached_property
 from pathlib import Path
 import json
@@ -14,8 +15,6 @@ from textual.app import App
 from textual.signal import Signal
 
 
-from posthog import Posthog
-
 from toad.settings import Schema, Settings
 from toad.agent_schema import Agent as AgentData
 from toad.settings_schema import SCHEMA
@@ -27,12 +26,6 @@ if TYPE_CHECKING:
     from toad.screens.main import MainScreen
     from toad.screens.settings import SettingsScreen
     from toad.screens.store import StoreScreen
-
-
-import warnings
-
-# TODO: Look in to Posthog Syntax warnings
-warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 
 DRACULA_TERMINAL_THEME = terminal_theme.TerminalTheme(
@@ -268,10 +261,7 @@ class ToadApp(App, inherit_bindings=False):
         )
         self._initial_mode = mode
         self.version_meta: VersionMeta | None = None
-        self.posthog = Posthog(
-            project_api_key="phc_mJWPV7GP3ar1i9vxBg2U8aiKsjNgVwum6F6ZggaD4ri",
-            host="https://us.i.posthog.com",
-        )
+
         super().__init__()
 
     @property
@@ -324,13 +314,31 @@ class ToadApp(App, inherit_bindings=False):
         if not self.settings.get("statistics.allow_collect", bool):
             # User has disabled stats
             return
+
+        POSTHOG_API_KEY = "phc_mJWPV7GP3ar1i9vxBg2U8aiKsjNgVwum6F6ZggaD4ri"
+        POSTHOG_HOST = "https://us.i.posthog.com"
+        POSTHOG_EVENT_URL = f"{POSTHOG_HOST}/i/v0/e/"
+
+        import httpx
+
+        timestamp = datetime.now(timezone.utc).isoformat()
+
         event_properties = {"toad_version": self.version} | properties
-        await asyncio.to_thread(
-            self.posthog.capture,
-            event_name,
-            distinct_id=self.anon_id,
-            properties=event_properties,
-        )
+        body_json = {
+            "api_key": POSTHOG_API_KEY,
+            "event": event_name,
+            "distinct_id": self.anon_id,
+            "properties": event_properties,
+            "timestamp": timestamp,
+        }
+        self.log(body_json)
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(POSTHOG_EVENT_URL, json=body_json)
+                self.log(response.status_code)
+                self.log(response.text)
+        except Exception:
+            pass
 
     def save_settings(self) -> None:
         if self.settings.changed:

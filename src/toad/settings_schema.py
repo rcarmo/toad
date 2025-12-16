@@ -239,27 +239,6 @@ SCHEMA: list[SchemaDict] = [
         ],
     },
     {
-        "key": "user",
-        "title": "User information",
-        "help": "Your details.",
-        "type": "object",
-        "fields": [
-            {
-                "key": "name",
-                "title": "Your name",
-                "type": "string",
-                "default": "$USER",
-            },
-            {
-                "key": "email",
-                "title": "Your email",
-                "type": "string",
-                "validate": [{"type": "is_email"}],
-                "default": "",
-            },
-        ],
-    },
-    {
         "key": "launcher",
         "title": "Launcher settings",
         "help": "Customize the launcher",
