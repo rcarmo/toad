@@ -53,3 +53,6 @@ def _get_environ_int(
 
 ACP_INITIALIZE: Final[bool] = _get_environ_bool("TOAD_ACP_INITIALIZE", True)
 """Initialize ACP agents?"""
+
+DEBUG: Final[bool] = _get_environ_bool("DEBUG", False)
+"""Debug flag."""

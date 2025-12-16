@@ -4,6 +4,7 @@ import platform
 from string import Template
 
 from toad.app import ToadApp
+from toad import paths
 
 ABOUT_TEMPLATE = Template("""\
 # About Toad v${TOAD_VERSION}
@@ -21,6 +22,8 @@ config read from `$SETTINGS_PATH`
 $CONFIG                       
 ```
 
+Additional app data stored in `$DATA_PATH`
+                          
 ## System
 
 | System | Version |
@@ -59,6 +62,7 @@ def render(app: ToadApp) -> str:
         config = None
 
     template_data = {
+        "DATA_PATH": paths.get_data(),
         "TOAD_VERSION": version("toad"),
         "TEXTUAL_VERSION": version("textual"),
         "RICH_VERSION": version("rich"),

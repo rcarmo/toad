@@ -406,7 +406,8 @@ class Agent(AgentBase):
             # This line should contain JSON, which may be:
             #   A) a JSONRPC request
             #   B) a JSONRPC response to a previous request
-            print(repr(line))
+            if constants.DEBUG:
+                log(repr(line))
             if not line.strip():
                 continue
 
@@ -416,17 +417,18 @@ class Agent(AgentBase):
             try:
                 line_str = line.decode("utf-8")
             except Exception as error:
-                print("Unable to decode utf-8 from agent:", error)
+                log("Unable to decode utf-8 from agent:", error)
                 continue
 
             try:
                 agent_data: jsonrpc.JSONType = json.loads(line_str)
             except Exception as error:
-                print(repr(line_str))
-                print("Error decoding JSON from agent:", error)
+                log(repr(line_str))
+                log("Error decoding JSON from agent:", error)
                 continue
 
-            log(agent_data)
+            if constants.DEBUG:
+                log(agent_data)
 
             if isinstance(agent_data, dict):
                 if "result" in agent_data or "error" in agent_data:
@@ -445,7 +447,7 @@ class Agent(AgentBase):
                     continue
 
             if not isinstance(agent_data, dict):
-                print("Invalid JSON from agent:", repr(agent_data))
+                log("Invalid JSON from agent:", repr(agent_data))
                 continue
 
             # By this point we know it is a JSON RPC call
@@ -463,7 +465,6 @@ class Agent(AgentBase):
             )
 
         agent_output.close()
-        print("exit")
 
     async def run(self) -> None:
         """The main logic of the Agent."""

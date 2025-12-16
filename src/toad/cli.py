@@ -195,18 +195,18 @@ def settings() -> None:
     print(f"{app.settings_path}")
 
 
-@main.command("replay")
-@click.argument("path", metavar="PATH.jsonl")
-def replay(path: str) -> None:
-    """Replay interaction from a jsonl file."""
-    import time
+# @main.command("replay")
+# @click.argument("path", metavar="PATH.jsonl")
+# def replay(path: str) -> None:
+#     """Replay interaction from a jsonl file."""
+#     import time
 
-    stdout = sys.stdout.buffer
-    with open(path, "rb") as replay_file:
-        for line in replay_file.readlines():
-            time.sleep(0.1)
-            stdout.write(line)
-            stdout.flush()
+#     stdout = sys.stdout.buffer
+#     with open(path, "rb") as replay_file:
+#         for line in replay_file.readlines():
+#             time.sleep(0.1)
+#             stdout.write(line)
+#             stdout.flush()
 
 
 @main.command("serve")
@@ -218,6 +218,17 @@ def serve(port: int, host: str) -> None:
 
     server = Server(sys.argv[0], host=host, port=port, title="Toad")
     server.serve()
+
+
+@main.command("about")
+def about() -> None:
+    """Serve Toad as a web application."""
+
+    from toad import about
+
+    app = ToadApp()
+
+    print(about.render(app))
 
 
 if __name__ == "__main__":
