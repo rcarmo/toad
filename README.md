@@ -2,6 +2,8 @@
 
 A unified interface for AI in your terminal.
 
+Run coding agents seamlessly under a single beautiful terminal UI, thanks to the [ACP](https://agentclientprotocol.com/protocol/initialization) protocol.
+
 <table>
 
   <tbody>
@@ -52,7 +54,7 @@ Launch Toad with the following:
 toad
 ```
 
-You should see something line the following:
+You should see something like this:
 
 <img width="1266" height="994" alt="front-fs8" src="https://github.com/user-attachments/assets/8831f7de-5349-4b3f-9de9-d4565b513108" />
 
@@ -61,12 +63,13 @@ If you already have an agent installed, you can skip the install step.
 To launch an agent, select it and press space.
 
 The footer will always display the most significant keys for the current context.
-To see all the keys, summon the command palette for `ctrl+p` and search for "keys".
+To see all the keys, summon the command palette with `ctrl+p` and search for "keys".
 
 ### Toad CLI
 
 WHen running Toad, the current working directory is assumed to be your project directory.
-To use another project directory, add the path.
+To use another project directory, add the path to the command.
+For example:
 
 ```bash
 toad ~/projects/my-awesome-app
@@ -79,9 +82,15 @@ For example:
 toad -a open-hands
 ```
 
+To see all subcommands and switches, add the `--help` switch:
+
+```bash
+toad --help
+```
+
 ### Web server
 
-You can also run Toad as a web application.
+You can run Toad as a web application.
 
 Run the following, and click the link in the terminal:
 
@@ -91,8 +100,12 @@ toad serve
 
 ![textual-serve](https://github.com/user-attachments/assets/1d861d48-d30b-44cd-972d-5986a01360bf)
 
+## Toad development
 
-I'm also in the #toad channel on the [Textualize discord server](https://discord.gg/Enf6Z3qhVr).
+Toad was built by [Will McGugan](https://github.com/willmcgugan) and is currently under active development.
+
+To duscuss Toad, join the #toad channel on the [Textualize discord server](https://discord.gg/Enf6Z3qhVr).
+
 
 
 
