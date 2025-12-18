@@ -53,7 +53,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 Then use UV to install toad:
 
 ```bash
-uv tool install -U batrachian-toad
+uv tool install -U batrachian-toad --python 3.14
 ```
 
 ## Using Toad
