@@ -18,11 +18,14 @@ StoreScreen {
         color: $text-warning;
     }
 
-    .footer-key--key {
-        color: $accent;
-        background: transparent;
-        # text-style: not bold;
-        padding: 0 1;        
+    Footer {
+        background: black 10%;
+        .footer-key--key {
+            color: $accent;
+            background: transparent;
+            # text-style: not bold;
+            padding: 0 1;        
+        }
     }
 
     #title-container {
