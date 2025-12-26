@@ -62,14 +62,13 @@ class AgentModal(ModalScreen):
         ]
         script_choices.append((f"Launch {agent['name']}", "__launch__"))
 
-        self.log(commands)
         with containers.Vertical(id="container"):
             with DescriptionContainer(id="description-container"):
                 yield widgets.Markdown(agent["help"], id="description")
             with containers.VerticalGroup():
                 if "install_acp" in commands:
                     yield widgets.Static(
-                        "This app requires an ACP adapter to work with Toad. Install from the actions list.",
+                        f"{agent['name']} requires an ACP adapter to work with Toad. Install from the actions list.",
                         classes="acp-warning",
                     )
                 with containers.HorizontalGroup():

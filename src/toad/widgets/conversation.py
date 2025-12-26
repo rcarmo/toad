@@ -324,6 +324,12 @@ class Conversation(containers.Vertical):
         else:
             self.prompt.text = history_entry["input"]
 
+    @on(events.Key)
+    async def on_key(self, event: events.Key):
+        if event.is_printable:
+            self.prompt.focus()
+            self.prompt.prompt_text_area.post_message(event)
+
     def compose(self) -> ComposeResult:
         yield Throbber(id="throbber")
         with Window():
