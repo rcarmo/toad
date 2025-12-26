@@ -380,7 +380,7 @@ class Conversation(containers.Vertical):
             self._focusable_terminals.remove(event.terminal)
         except ValueError:
             pass
-        self.prompt.project_directory_updted()
+        self.prompt.project_directory_updated()
 
     @on(Terminal.AlternateScreenChanged)
     def on_terminal_alternate_screen_(
@@ -651,7 +651,7 @@ class Conversation(containers.Vertical):
         self._agent_response = None
         self._agent_thought = None
         self.post_message(messages.ProjectDirectoryUpdated())
-        self.prompt.project_directory_updted()
+        self.prompt.project_directory_updated()
 
     @on(Menu.OptionSelected)
     async def on_menu_option_selected(self, event: Menu.OptionSelected) -> None:

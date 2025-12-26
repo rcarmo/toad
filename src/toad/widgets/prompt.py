@@ -604,7 +604,7 @@ class Prompt(containers.VerticalGroup):
     def watch_show_slash_complete(self, show: bool) -> None:
         self.slash_complete.focus()
 
-    def project_directory_updted(self) -> None:
+    def project_directory_updated(self) -> None:
         """Called when there is may be new files"""
         self.path_search.refresh_paths()
 
