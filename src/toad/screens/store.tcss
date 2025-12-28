@@ -11,19 +11,14 @@ StoreScreen {
 
     .heading {
         margin: 0 0 0 0;
-        padding: 1 1 0 2;
-        # width: 100%;
-        # border-bottom: solid $text-secondary 50%;
+        padding: 1 1 0 2;        
         text-style: underline ;         
         color: $text-warning;
     }
 
-    Footer {
-        background: black 10%;
-        .footer-key--key {
-            color: $accent;
-            background: transparent;
-            # text-style: not bold;
+    Footer {    
+        .footer-key--key {            
+            background: transparent;            
             padding: 0 1;        
         }
     }
@@ -36,8 +31,7 @@ StoreScreen {
             margin: 0 1;
             border: block black 20%;
             background: black 20%;
-            grid-size: 2 1;
-            # max-width: 100;
+            grid-size: 2 1;            
             height: auto;
             grid-columns: 24 1fr;
             grid-rows: auto;
@@ -50,8 +44,7 @@ StoreScreen {
 
             Mandelbrot {   
                 border: none;             
-                height: 100%;                                                
-                # min-height: 8;
+                height: 100%;                                                                
             }
         }        
     }

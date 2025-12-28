@@ -16,7 +16,7 @@ __pycache__
 .mypy_cache
 .github
 
-
+uv.lock
 agent.jsonl
 replay.jsonl
 sandbox/

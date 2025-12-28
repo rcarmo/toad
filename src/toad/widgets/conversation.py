@@ -224,7 +224,7 @@ class Conversation(containers.Vertical):
             "ctrl+c",
             "interrupt",
             "Interrupt",
-            tooltip="interrupt",
+            tooltip="Interrupt running command",
         ),
     ]
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 from functools import lru_cache
 from operator import itemgetter
+import os
 from pathlib import Path
 import re2 as re
 from typing import Sequence
@@ -16,10 +17,14 @@ from textual import work
 from textual import getters
 from textual import containers
 from textual import events
+from textual.actions import SkipAction
+
 from textual.reactive import var, Initialize
 from textual.content import Content, Span
+from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import OptionList, Input
+from textual import widgets
+from textual.widgets import OptionList, Input, DirectoryTree
 from textual.widgets.option_list import Option
 
 
@@ -27,6 +32,7 @@ from toad import directory
 from toad.fuzzy import FuzzySearch
 from toad.messages import Dismiss, InsertPath, PromptSuggestion
 from toad.path_filter import PathFilter
+from toad.widgets.project_directory_tree import ProjectDirectoryTree
 
 
 class PathFuzzySearch(FuzzySearch):
@@ -71,6 +77,34 @@ class PathFuzzySearch(FuzzySearch):
         return score
 
 
+class FuzzyInput(Input):
+    """Adds a Content placeholder to fuzzy input.
+
+    TODO: Add this ability to Textual.
+    """
+
+    def render_line(self, y: int) -> Strip:
+        if y == 0 and not self.value:
+            placeholder = Content.from_markup(self.placeholder).expand_tabs()
+            placeholder = placeholder.stylize(self.visual_style)
+            placeholder = placeholder.stylize(
+                self.get_visual_style("input--placeholder")
+            )
+            if self.has_focus:
+                cursor_style = self.get_visual_style("input--cursor")
+                if self._cursor_visible:
+                    # If the placeholder is empty, there's no characters to stylise
+                    # to make the cursor flash, so use a single space character
+                    if len(placeholder) == 0:
+                        placeholder = Content(" ")
+                    placeholder = placeholder.stylize(cursor_style, 0, 1)
+
+            strip = Strip(placeholder.render_segments())
+            return strip
+
+        return super().render_line(y)
+
+
 class PathSearch(containers.VerticalGroup):
     CURSOR_BINDING_GROUP = Binding.Group(description="Move selection")
     BINDINGS = [
@@ -84,8 +118,9 @@ class PathSearch(containers.VerticalGroup):
             group=CURSOR_BINDING_GROUP,
             priority=True,
         ),
-        Binding("enter", "submit", "Insert path", priority=True),
-        Binding("escape", "dismiss", "Dismiss", priority=True),
+        Binding("enter", "submit", "Insert path", priority=True, show=False),
+        Binding("escape", "dismiss", "Dismiss", priority=True, show=False),
+        Binding("tab", "switch_picker", "Switch picker", priority=True, show=False),
     ]
 
     def get_fuzzy_search(self) -> FuzzySearch:
@@ -98,13 +133,44 @@ class PathSearch(containers.VerticalGroup):
     loaded = var(False)
     filter = var("")
     fuzzy_search: var[FuzzySearch] = var(Initialize(get_fuzzy_search))
+    show_tree_picker: var[bool] = var(False)
+    tree_path = var("")
 
     option_list = getters.query_one(OptionList)
+    tree_view = getters.query_one(ProjectDirectoryTree)
     input = getters.query_one(Input)
 
     def compose(self) -> ComposeResult:
-        yield Input(compact=True, placeholder="fuzzy search")
-        yield OptionList()
+        with widgets.ContentSwitcher(initial="path-search-fuzzy"):
+            with containers.VerticalGroup(id="path-search-fuzzy"):
+                yield FuzzyInput(
+                    compact=True, placeholder="fuzzy search \t[r]▌tab▐[/r] tree view"
+                )
+                yield OptionList()
+            with containers.VerticalGroup(id="path-search-tree"):
+                yield widgets.Static(
+                    "tree view \t[r]▌tab▐[/r] fuzzy search", classes="message"
+                )
+                yield ProjectDirectoryTree(self.root)
+
+    def on_mount(self) -> None:
+        tree = self.tree_view
+        tree.guide_depth = 2
+        tree.center_scroll = True
+
+    def watch_show_tree_picker(self, show_tree_picker: bool) -> None:
+        content_switcher = self.query_one(widgets.ContentSwitcher)
+        content_switcher.current = (
+            "path-search-tree" if show_tree_picker else "path-search-fuzzy"
+        )
+        if show_tree_picker:
+            self.tree_view.focus()
+
+        else:
+            self.input.focus()
+
+    def action_switch_picker(self) -> None:
+        self.show_tree_picker = not self.show_tree_picker
 
     async def search(self, search: str) -> None:
         if not search:
@@ -149,19 +215,57 @@ class PathSearch(containers.VerticalGroup):
         self.post_message(PromptSuggestion(""))
 
     def action_cursor_down(self) -> None:
-        self.option_list.action_cursor_down()
+        if self.show_tree_picker:
+            self.tree_view.action_cursor_down()
+        else:
+            self.option_list.action_cursor_down()
 
     def action_cursor_up(self) -> None:
-        self.option_list.action_cursor_up()
+        if self.show_tree_picker:
+            self.tree_view.action_cursor_up()
+        else:
+            self.option_list.action_cursor_up()
 
     def action_dismiss(self) -> None:
         self.post_message(Dismiss(self))
 
-    def focus(self, scroll_visible: bool = False) -> Self:
-        return self.input.focus(scroll_visible=scroll_visible)
+    def on_show(self) -> None:
+        self.focus()
 
-    def on_descendant_blur(self) -> None:
-        self.post_message(Dismiss(self))
+    def focus(self, scroll_visible: bool = False) -> Self:
+        if self.show_tree_picker:
+            return self.tree_view.focus(scroll_visible=scroll_visible)
+        else:
+            return self.input.focus(scroll_visible=scroll_visible)
+
+    def on_descendant_blur(self, event: events.DescendantBlur) -> None:
+        if self.show_tree_picker:
+            if event.widget == self.tree_view:
+                self.post_message(Dismiss(self))
+        else:
+            if event.widget == self.input:
+                self.post_message(Dismiss(self))
+
+    @on(DirectoryTree.NodeHighlighted)
+    def on_node_highlighted(self, event: DirectoryTree.NodeHighlighted) -> None:
+        event.stop()
+
+        dir_entry = event.node.data
+        if dir_entry is not None:
+            path = Path(dir_entry.path).resolve().relative_to(self.root.resolve())
+            self.tree_path = str(path)
+            self.post_message(PromptSuggestion(self.tree_path))
+
+    @on(DirectoryTree.FileSelected)
+    def on_file_selected(self, event: DirectoryTree.FileSelected) -> None:
+        event.stop()
+
+        dir_entry = event.node.data
+        if dir_entry is not None:
+            path = Path(dir_entry.path).resolve().relative_to(self.root.resolve())
+            self.tree_path = str(path)
+            self.post_message(InsertPath(self.tree_path))
+            self.post_message(Dismiss(self))
 
     @on(Input.Changed)
     async def on_input_changed(self, event: Input.Changed):
@@ -178,7 +282,10 @@ class PathSearch(containers.VerticalGroup):
         self.action_submit()
 
     def action_submit(self):
-        if (highlighted := self.option_list.highlighted) is not None:
+        if self.show_tree_picker:
+            raise SkipAction()
+
+        elif (highlighted := self.option_list.highlighted) is not None:
             option = self.option_list.options[highlighted]
             if option.id:
                 self.post_message(InsertPath(option.id))
@@ -205,8 +312,12 @@ class PathSearch(containers.VerticalGroup):
     async def refresh_paths(self):
         self.loading = True
         root = self.root
+
         try:
             path_filter = await asyncio.to_thread(self.get_path_filter, root)
+            self.tree_view.path_filter = path_filter
+            self.tree_view.clear()
+            await self.tree_view.reload()
             paths = await directory.scan(
                 root, path_filter=path_filter, add_directories=True
             )
@@ -223,16 +334,11 @@ class PathSearch(containers.VerticalGroup):
         return LoadingIndicator()
 
     def highlight_path(self, path: str) -> Content:
-        content = Content.styled(path, "dim")
-        if path.startswith("."):
+        content = Content.styled(path, "dim $text")
+        if os.path.split(path)[-1].startswith("."):
             return content
-        if not path.endswith("/"):
-            if "/" in path:
-                content = content.stylize("$text-success", path.rfind("/") + 1)
-            else:
-                content = content.stylize("$text-success dim")
-        if (match := re.search(r"\.(.*$)", content.plain)) is not None:
-            content = content.stylize("not dim", match.start(1), match.end(1))
+        content = content.highlight_regex("[^/]*?$", style="not dim $text-primary")
+        content = content.highlight_regex(r"\.[^/]*$", style="italic")
         return content
 
     def watch_paths(self, paths: list[Path]) -> None:
@@ -254,7 +360,7 @@ class PathSearch(containers.VerticalGroup):
             [
                 Option(highlighted_path, id=highlighted_path.plain)
                 for highlighted_path in self.highlighted_paths
-            ][:20]
+            ][:100]
         )
         self.option_list.highlighted = 0
         self.post_message(PromptSuggestion(""))

@@ -48,7 +48,7 @@ class PathFilter:
         self._path_specs: dict[Path, Sequence[GitIgnoreSpec]] = {}
 
     def __rich_repr__(self) -> rich.repr.Result:
-        yield str(self._root)
+        yield (str(self._root),)
 
     @classmethod
     def from_git_root(cls, path: Path) -> PathFilter:

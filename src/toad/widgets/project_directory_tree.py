@@ -1,14 +1,25 @@
 from pathlib import Path
 from typing import Iterable
 
-import pathspec.patterns
-from pathspec import PathSpec
+import asyncio
 
-from textual import work
+from textual.binding import Binding
 from textual.widgets import DirectoryTree
+
+from toad.path_filter import PathFilter
 
 
 class ProjectDirectoryTree(DirectoryTree):
+    BINDINGS = [
+        Binding(
+            "ctrl+c",
+            "dismiss",
+            "Interrupt",
+            tooltip="Interrupt running command",
+            show=False,
+        ),
+    ]
+
     def __init__(
         self,
         path: str | Path,
@@ -18,40 +29,14 @@ class ProjectDirectoryTree(DirectoryTree):
         classes: str | None = None,
         disabled: bool = False,
     ) -> None:
+        path = Path(path).resolve() if isinstance(path, str) else path.resolve()
         super().__init__(path, name=name, id=id, classes=classes, disabled=disabled)
-        self._path_spec: PathSpec | None = None
-
-    @work(thread=True)
-    async def load_path_spec(self, git_ignore_path: Path) -> PathSpec | None:
-        """Get a path spec instance if there is a .gitignore file present.
-
-        Args:
-            git_ignore_path): Path to .gitignore.
-
-        Returns:
-            A `PathSpec` instance.
-        """
-        try:
-            if git_ignore_path.is_file():
-                spec_text = git_ignore_path.read_text()
-                spec = PathSpec.from_lines(
-                    pathspec.patterns.GitWildMatchPattern, spec_text.splitlines()
-                )
-                return spec
-        except OSError:
-            return None
-        return None
-
-    async def get_path_spec(self) -> PathSpec | None:
-        if self._path_spec is None:
-            path = (
-                Path(self.path) if isinstance(self.path, str) else self.path
-            ) / ".gitignore"
-            self._path_spec = await self.load_path_spec(path).wait()
-        return self._path_spec
+        self.path_filter: PathFilter | None = None
 
     async def on_mount(self) -> None:
-        await self.get_path_spec()
+        path = Path(self.path) if isinstance(self.path, str) else self.path
+        path = path.resolve()
+        self._path_filter = await asyncio.to_thread(PathFilter.from_git_root, path)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         """Filter the paths before adding them to the tree.
@@ -67,8 +52,9 @@ class ProjectDirectoryTree(DirectoryTree):
         version of this method.
         """
 
-        if path_spec := self._path_spec:
+        if (path_filter := self._path_filter) is not None:
             for path in paths:
-                if not path_spec.match_file(path):
+                if not path_filter.match(path):
                     yield path
-        yield from paths
+        else:
+            yield from paths
