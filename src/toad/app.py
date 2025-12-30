@@ -1,4 +1,4 @@
-import asyncio
+from importlib.resources import files
 from datetime import datetime, timezone
 from functools import cached_property
 from pathlib import Path
@@ -345,7 +345,9 @@ class ToadApp(App, inherit_bindings=False):
             pass
 
     @work(thread=True)
-    def system_notify(self, message: str, *, title: str = "") -> None:
+    def system_notify(
+        self, message: str, *, title: str = "", sound: str | None = None
+    ) -> None:
         """Use OS level notifications.
 
         Args:
@@ -365,6 +367,10 @@ class ToadApp(App, inherit_bindings=False):
         notification.message = message
         notification.title = title
         notification.application_name = "🐸 Toad"
+        if sound and self.settings.get("notifications.enable_sounds", bool):
+            sound_path = str(files("toad.data").joinpath(f"sounds/{sound}.wav"))
+            notification.audio = sound_path
+
         notification.send()
 
     def on_notify(self, event: Notify) -> None:

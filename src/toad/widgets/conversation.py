@@ -665,6 +665,12 @@ class Conversation(containers.Vertical):
         self._agent_thought = None
         self.post_message(messages.ProjectDirectoryUpdated())
         self.prompt.project_directory_updated()
+        if self.app.settings.get("notifications.turn_over", bool):
+            self.app.system_notify(
+                f"{self.agent_title} has finished working",
+                title="Waiting for input",
+                sound="turn-over",
+            )
 
     @on(Menu.OptionSelected)
     async def on_menu_option_selected(self, event: Menu.OptionSelected) -> None:

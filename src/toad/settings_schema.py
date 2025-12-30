@@ -138,6 +138,18 @@ SCHEMA: list[SchemaDict] = [
                 ],
             },
             {
+                "key": "enable_sounds",
+                "title": "Allow sound in notifications?",
+                "type": "boolean",
+                "default": True,
+            },
+            {
+                "key": "turn_over",
+                "title": "Desktop notification when agent has finished?",
+                "type": "boolean",
+                "default": True,
+            },
+            {
                 "key": "hide_low_severity",
                 "title": "Limit desktop notifications to warning and errors?",
                 "type": "boolean",
