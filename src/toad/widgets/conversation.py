@@ -441,7 +441,6 @@ class Conversation(containers.Vertical):
     def on_directory_changed(self, event: DirectoryChanged) -> None:
         event.stop()
         self._directory_changed = True
-        self.notify("directory changed")
 
     @on(Terminal.Finalized)
     def on_terminal_finalized(self, event: Terminal.Finalized) -> None:
