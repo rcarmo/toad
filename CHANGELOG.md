@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen will now expand to full width when the screen is < 100 characters
 - Sidebar will float if focused and "hide sidebar when not in use" setting is True
 
+### Fixed
+
+- A more more defensive approach to watching directories, which may fixed stalling problem
+
+
 ## [0.5.20] - 2026-01-04
 
 ### Changed
