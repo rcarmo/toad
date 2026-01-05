@@ -5,17 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.5.21] - 2026-01-04
 
 ### Changed
 
 - Settings screen will now expand to full width when the screen is < 100 characters
 - Sidebar will float if focused and "hide sidebar when not in use" setting is True
+- Replace mac and linux shell settings with a single setting (you may have to update this you have changed the default)
 
 ### Fixed
 
 - A more more defensive approach to watching directories, which may fixed stalling problem
-
 
 ## [0.5.20] - 2026-01-04
 
@@ -148,6 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release. This document will be updated for subsequent releases.
 
+[0.5.21]: https://github.com/batrachianai/toad/compare/v0.5.20...v0.5.21
 [0.5.20]: https://github.com/batrachianai/toad/compare/v0.5.19...v0.5.20
 [0.5.19]: https://github.com/batrachianai/toad/compare/v0.5.18...v0.5.19
 [0.5.18]: https://github.com/batrachianai/toad/compare/v0.5.17...v0.5.18
