@@ -1613,8 +1613,7 @@ class Conversation(containers.Vertical):
 
             app = self.app
             about_md = about.render(app)
-            for n in range(30):
-                await self.post(MarkdownNote(about_md, classes="about"))
+            await self.post(MarkdownNote(about_md, classes="about"))
             self.app.copy_to_clipboard(about_md)
             self.notify(
                 "A copy of /about-toad has been placed in your clipboard",

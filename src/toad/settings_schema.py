@@ -264,28 +264,6 @@ SCHEMA: list[SchemaDict] = [
                 "type": "text",
                 "default": "cat",
             },
-            {
-                "key": "linux",
-                "title": "Linux specific settings",
-                "help": "Edit only if you know what you are doing",
-                "type": "object",
-                "fields": [
-                    {
-                        "key": "run",
-                        "title": "Shell command",
-                        "type": "string",
-                        "help": "The command used to launch your shell on Linux.\n[bold]Note:[/] Requires restart.",
-                        "default": "/bin/sh",
-                    },
-                    {
-                        "key": "start",
-                        "title": "Startup commands",
-                        "type": "text",
-                        "help": "Command(s) to run on shell start.",
-                        "default": 'PS1=""',
-                    },
-                ],
-            },
         ],
     },
     {
