@@ -26,8 +26,7 @@ Throbber {
 
 App.-hide-footer {
     #info-container {
-        margin: 0 !important;
-        # background: red;
+        margin: 0 !important;        
     }
     Footer {
         display: none;        
@@ -36,7 +35,7 @@ App.-hide-footer {
 
 App.-hide-footer.-compact-input {
     #prompt-container {
-        margin: 0 1;
+        margin: 0 0;
     }
 }
 
@@ -66,18 +65,18 @@ App.-hide-info-bar #info-container {
     display: none;
 }
 
-App.-compact-input {
+App.-compact-input {    
     Prompt {        
         #prompt-container {
             border: none;
             &:focus-within {
                 border: none;
             }   
-            margin: 0 0 1 0;
+            margin: 0 0 0 0;
             
         }        
-        Conversation.-column #info-container {
-            margin: 0 1;        
+        #info-container {
+            margin: 0 0;        
         }
     }
 }
@@ -510,7 +509,7 @@ Prompt {
     #info-container {                
         
         height: 1;
-        margin: 1 0;
+        margin: 1 1;
         # padding: 1 0;
         
         AgentInfo {

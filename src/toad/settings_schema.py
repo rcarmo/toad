@@ -36,7 +36,7 @@ SCHEMA: list[SchemaDict] = [
             {
                 "key": "compact-input",
                 "title": "Compact text input?",
-                "help": "Remove border around text input for more space",
+                "help": "Remove border and margin around the text area for additional space",
                 "type": "boolean",
                 "default": False,
             },
