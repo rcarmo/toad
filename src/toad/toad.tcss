@@ -216,7 +216,7 @@ Conversation {
         width: 1fr;
         overflow: hidden;         
         height: auto;  
-        padding: 0 0 0 0;         
+        padding: 0 0 0 0;                 
     }    
 
     ContentsGrid {            
@@ -610,13 +610,14 @@ MainScreen {
         width: 40;
         max-width: 45%;
         min-width: 40;
-        height: 1fr;        
+        height: 1fr;     
+        outline: green;   
                          
-        DirectoryTree {            
-            background: transparent;
+        DirectoryTree {  
+            height: 1fr;                                  
             &:focus {
                 background-tint: transparent;
-            }                            
+            }                                        
         }
 
 
@@ -631,12 +632,7 @@ MainScreen {
 
 
         Collapsible {   
-            
-            CollapsibleTitle {
-                height: 1;   
-                margin:0;             
-            }
-            
+        
             width: 1fr;                  
             height: 1fr;              
             min-height: 3;
@@ -647,14 +643,14 @@ MainScreen {
 
             &.-fixed {                
                 height: auto;
+                Contents {
+                    height: auto;
+                }
             }
-                                
+                               
             Contents {                
-                width: 1fr;
-                height: auto;
-                max-height: 100%;
-                margin: 0;
-                padding: 1 0 0 0;                                
+                height: 1fr;
+                padding: 1 0 0 0;                                           
             }
         }
 

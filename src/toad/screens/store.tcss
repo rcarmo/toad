@@ -183,8 +183,7 @@ AgentModal {
             }
             
             &:focus {
-                background: $primary 7%;
-                
+                background: $primary 7%;                
             }
         }
 

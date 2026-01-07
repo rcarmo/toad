@@ -152,7 +152,10 @@ class PathSearch(containers.VerticalGroup):
                 yield OptionList()
             with containers.VerticalGroup(id="path-search-tree"):
                 yield widgets.Static(
-                    "tree view \t[r]▌tab▐[/r] fuzzy search", classes="message"
+                    Content.from_markup(
+                        "tree view \t[r]▌tab▐[/] fuzzy search"
+                    ).expand_tabs(),
+                    classes="message",
                 )
                 yield ProjectDirectoryTree(self.root).data_bind(path=PathSearch.root)
 
