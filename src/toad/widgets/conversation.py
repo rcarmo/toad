@@ -179,10 +179,6 @@ class Contents(containers.VerticalGroup, can_focus=False):
             )
         return placements
 
-    def update_node_styles(self, animate: bool = True) -> None:
-        """Prevent expensive update of styles"""
-        # TODO: Add an option in Textual to do this without overriding a private method
-
 
 class ContentsGrid(containers.Grid):
     def pre_layout(self, layout) -> None:
@@ -194,11 +190,7 @@ class Window(containers.VerticalScroll):
     BINDING_GROUP_TITLE = "View"
     BINDINGS = [Binding("end", "screen.focus_prompt", "Prompt")]
 
-    def allow_focus(self) -> bool:
-        return self.show_vertical_scrollbar
-
     def update_node_styles(self, animate: bool = True) -> None:
-        # TODO: Allow disabling in Textual
         pass
 
 
@@ -344,7 +336,7 @@ class Conversation(containers.Vertical):
         return clamp(index, -self.shell_history.size, 0)
 
     def validate_prompt_history_index(self, index: int) -> int:
-        return clamp(index, -self.shell_history.size, 0)
+        return clamp(index, -self.prompt_history.size, 0)
 
     def shell_complete(self, prefix: str) -> list[str]:
         return self.shell_history.complete(prefix)
@@ -415,12 +407,6 @@ class Conversation(containers.Vertical):
             modes=Conversation.modes,
             status=Conversation.status,
         )
-
-    def update_node_styles(self, animate: bool = True) -> None:
-        if not self.contents.children:
-            super().update_node_styles(animate=animate)
-            return
-        self.prompt.update_node_styles(animate=animate)
 
     @property
     def _terminal(self) -> Terminal | None:
@@ -1022,7 +1008,7 @@ class Conversation(containers.Vertical):
     @on(messages.HistoryMove)
     async def on_history_move(self, message: messages.HistoryMove) -> None:
         message.stop()
-        if message.shell or not message.body.strip():
+        if message.shell:
             await self.shell_history.open()
 
             if self.shell_history_index == 0:
@@ -1043,6 +1029,9 @@ class Conversation(containers.Vertical):
                     and self.shell_history_index <= -self.shell_history.size
                 ):
                     break
+        else:
+            await self.prompt_history.open()
+            self.prompt_history_index += message.direction
 
     @work
     async def request_permissions(
@@ -1157,7 +1146,7 @@ class Conversation(containers.Vertical):
 
     def _build_slash_commands(self) -> list[SlashCommand]:
         slash_commands = [
-            SlashCommand("/about-toad", "About Toad"),
+            SlashCommand("/toad:about", "About Toad"),
         ]
         slash_commands.extend(self.agent_slash_commands)
         deduplicated_slash_commands = {
@@ -1621,7 +1610,7 @@ class Conversation(containers.Vertical):
                 be forwarded to the agent.
         """
         command, _, parameters = text[1:].partition(" ")
-        if command == "about-toad":
+        if command == "toad:about":
             from toad import about
             from toad.widgets.markdown_note import MarkdownNote
 

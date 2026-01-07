@@ -188,4 +188,5 @@ class MainScreen(Screen, can_focus=False):
     def watch_scrollbar(self, old_scrollbar: str, scrollbar: str) -> None:
         if old_scrollbar:
             self.conversation.remove_class(f"-scrollbar-{old_scrollbar}")
-        self.conversation.add_class(f"-scrollbar-{scrollbar}")
+        if scrollbar:
+            self.conversation.add_class(f"-scrollbar-{scrollbar}")

@@ -25,18 +25,19 @@ Throbber {
 }
 
 App.-hide-footer {
-    
     #info-container {
-        display: none;
+        margin: 0 !important;        
     }
     Footer {
-        display: none;
-        #info-container {
-            display: none;
-        }    
+        display: none;        
     }
 }
 
+App.-hide-footer.-compact-input {
+    #prompt-container {
+        margin: 0 0;
+    }
+}
 
 
 App.-hide-thoughts AgentThought {
@@ -44,12 +45,10 @@ App.-hide-thoughts AgentThought {
 }
 
 App.-hide-sidebar SideBar {    
-    layer: sidebar;
-    
+    layer: sidebar;    
     offset-x: -100%;
     &:focus-within {
-        offset-x: 0;            
-        
+        offset-x: 0;                    
     }
 }
 
@@ -62,14 +61,23 @@ App.-hide-agent-title AgentInfo {
 }
 
 App.-hide-info-bar #info-container {
-    height: 1;
-    visibility: hidden;
+    height: 1;    
+    display: none;
 }
 
-App.-compact-input Prompt #prompt-container {
-    border: none;
-    &:focus-within {
-        border: none;
+App.-compact-input {    
+    Prompt {        
+        #prompt-container {
+            border: none;
+            &:focus-within {
+                border: none;
+            }   
+            margin: 0 0 0 0;
+            
+        }        
+        #info-container {
+            margin: 0 0;        
+        }
     }
 }
 
@@ -193,9 +201,14 @@ Conversation {
     height: 1fr;    
     layers: base prompt float;        
 
+    
     &.-column {
         max-width: 100;             
-        background: black 7%;                   
+        background: black 7%;   
+        
+        #info-container {            
+            margin: 1 1;
+        }                  
     }
     
     Contents {        
@@ -203,7 +216,7 @@ Conversation {
         width: 1fr;
         overflow: hidden;         
         height: auto;  
-        padding: 0 0 0 0;         
+        padding: 0 0 0 0;                 
     }    
 
     ContentsGrid {            
@@ -459,7 +472,7 @@ Prompt {
             background: white 40%;
         }
         height: auto;
-        
+        margin: 0 0 1 0;
         border: tall transparent;
         border-subtitle-align: left;
         border-subtitle-style: reverse;
@@ -494,18 +507,24 @@ Prompt {
     }
     
     #info-container {                
-        height: 3;       
-                
+        
+        height: 1;
+        margin: 1 1;
+        # padding: 1 0;
+        
         AgentInfo {
             padding: 0 1;
-            margin: 1 1;
+            margin: 0 1 0 0;
             color: $text-primary;
             background: $primary 10%;
             width: auto;           
         }
 
-        CondensedPath {                 
-            margin: 1 1;
+        CondensedPath { 
+            &:first-of-type {
+                margin: 0 1 0 0;
+            }
+            margin: 0 1;
             width: 1fr;            
             height: 1;
             text-wrap: nowrap;
@@ -514,7 +533,7 @@ Prompt {
 
         StatusLine {            
             color: $secondary 70%;    
-            margin: 1 0;
+            margin: 0 0;
             width: auto;
             height: 1;    
             text-align: right;            
@@ -524,7 +543,7 @@ Prompt {
         
         ModeInfo {
             padding: 0 1;
-            margin: 1 1;
+            margin: 0 0;
             color: $text-secondary;
             background: $secondary 10%;
             dock: right; 
@@ -591,13 +610,13 @@ MainScreen {
         width: 40;
         max-width: 45%;
         min-width: 40;
-        height: 1fr;        
+        height: 1fr;             
                          
-        DirectoryTree {            
-            background: transparent;
+        DirectoryTree {  
+            height: 1fr;                                  
             &:focus {
                 background-tint: transparent;
-            }                            
+            }                                        
         }
 
 
@@ -612,12 +631,7 @@ MainScreen {
 
 
         Collapsible {   
-            
-            CollapsibleTitle {
-                height: 1;   
-                margin:0;             
-            }
-            
+        
             width: 1fr;                  
             height: 1fr;              
             min-height: 3;
@@ -628,14 +642,14 @@ MainScreen {
 
             &.-fixed {                
                 height: auto;
+                Contents {
+                    height: auto;
+                }
             }
-                                
+                               
             Contents {                
-                width: 1fr;
-                height: auto;
-                max-height: 100%;
-                margin: 0;
-                padding: 1 0 0 0;                                
+                height: 1fr;
+                padding: 1 0 0 0;                                           
             }
         }
 
