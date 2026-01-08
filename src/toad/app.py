@@ -249,7 +249,7 @@ class ToadApp(App, inherit_bindings=False):
     terminal_title: var[str] = var("Toad")
     terminal_title_icon: var[str] = var("🐸")
     terminal_title_flash = var(0)
-    terminal_title_blink = var(bool)
+    terminal_title_blink = var(False)
 
     HORIZONTAL_BREAKPOINTS = [(0, "-narrow"), (100, "-wide")]
 
