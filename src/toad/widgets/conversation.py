@@ -84,6 +84,24 @@ https://github.com/batrachianai/toad/discussions
 
 HELP_URL = "https://github.com/batrachianai/toad/discussions"
 
+INTERNAL_EROR = f"""\
+## Internal error
+
+The agent reported an internal error:
+
+```
+$ERROR
+```
+
+This is likely an issue with the agent, and not Toad.
+
+- Try the prompt again
+- Report the issue to the Agent developer
+
+Ask on {HELP_URL} if you need assistance.
+
+"""
+
 STOP_REASON_MAX_TOKENS = f"""\
 ## Maximum tokens reached
 
@@ -715,8 +733,19 @@ class Conversation(containers.Vertical):
             try:
                 self.turn = "agent"
                 stop_reason = await self.agent.send_prompt(prompt)
-            except jsonrpc.APIError:
+            except jsonrpc.APIError as error:
+                from toad.widgets.markdown_note import MarkdownNote
+
                 self.turn = "client"
+
+                message = error.message or "no details were provided"
+
+                await self.post(
+                    MarkdownNote(
+                        INTERNAL_EROR.replace("$ERROR", message),
+                        classes="-stop-reason",
+                    )
+                )
             finally:
                 self.busy_count -= 1
             self.call_later(self.agent_turn_over, stop_reason)

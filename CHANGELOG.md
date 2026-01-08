@@ -5,13 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.5.24] - 2026-01-08
 
 ### Added
 
 - Added sound for permission request
 - Added terminal title
 - Added blinking of terminal title when asking permission
+- Added an error message if the agent reports an internal error during its turn
 
 ## [0.5.23] - 2026-01-06
 
@@ -173,6 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release. This document will be updated for subsequent releases.
 
+[0.5.24]: https://github.com/batrachianai/toad/compare/v0.5.23...v0.5.24
 [0.5.23]: https://github.com/batrachianai/toad/compare/v0.5.22...v0.5.23
 [0.5.22]: https://github.com/batrachianai/toad/compare/v0.5.21...v0.5.22
 [0.5.21]: https://github.com/batrachianai/toad/compare/v0.5.20...v0.5.21
