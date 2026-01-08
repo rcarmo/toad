@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added sound for permission request
+- Added terminal title
+- Added blinking of terminal title when asking permission
 
 ## [0.5.23] - 2026-01-06
 
