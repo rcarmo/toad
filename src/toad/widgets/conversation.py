@@ -19,13 +19,13 @@ from textual import events
 from textual.actions import SkipAction
 from textual.binding import Binding
 from textual.content import Content
-from textual.geometry import clamp
+from textual.geometry import clamp, Size
 from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import Static
 from textual.widgets.markdown import MarkdownBlock, MarkdownFence
 from textual.geometry import Offset, Spacing
-from textual.reactive import var
+from textual.reactive import var, Reactive
 from textual.layouts.grid import GridLayout
 from textual.layout import WidgetPlacement
 
@@ -186,6 +186,7 @@ class Cursor(Static):
 
 
 class Contents(containers.VerticalGroup, can_focus=False):
+
     def process_layout(
         self, placements: list[WidgetPlacement]
     ) -> list[WidgetPlacement]:
@@ -199,9 +200,15 @@ class Contents(containers.VerticalGroup, can_focus=False):
 
 
 class ContentsGrid(containers.Grid):
+
     def pre_layout(self, layout) -> None:
         assert isinstance(layout, GridLayout)
         layout.stretch_height = True
+
+
+class CursorContainer(containers.Vertical):
+
+    pass
 
 
 class Window(containers.VerticalScroll):
@@ -442,7 +449,7 @@ class Conversation(containers.Vertical):
         yield Throbber(id="throbber")
         with Window():
             with ContentsGrid():
-                with containers.VerticalGroup(id="cursor-container"):
+                with CursorContainer(id="cursor-container"):
                     yield Cursor()
                 yield Contents(id="contents")
         yield Flash()

@@ -77,6 +77,7 @@ Tap escape *twice* to exit.
             classes=classes,
             disabled=disabled,
         )
+        self.set_reactive(Terminal.auto_links, False)
         self.minimum_terminal_width = minimum_terminal_width
         self._get_terminal_dimensions = get_terminal_dimensions
 
@@ -191,6 +192,7 @@ Tap escape *twice* to exit.
     def update_size(self, width: int, height: int) -> None:
         old_width = self._width
         old_height = self._height
+
         self._terminal_render_cache.grow(height * 2)
         self._width = width or 80
         self._height = height or 24
@@ -215,7 +217,6 @@ Tap escape *twice* to exit.
         self.refresh()
 
     def on_mount(self) -> None:
-        self.auto_links = False
         self.anchor()
         if self._get_terminal_dimensions is None:
             width, height = self.scrollable_content_region.size
