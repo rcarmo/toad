@@ -152,7 +152,7 @@ class TerminalTool(Terminal):
         self._released = True
 
     def watch__command(self, command: Command) -> None:
-        self.border_title = str(command)
+        self.border_title = Content(str(command))
 
     async def start(self, width: int = 0, height: int = 0) -> None:
         assert self._command is not None

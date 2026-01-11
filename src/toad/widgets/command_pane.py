@@ -177,6 +177,7 @@ class CommandPane(Terminal):
 
 if __name__ == "__main__":
     from textual.app import App, ComposeResult
+    from textual.content import Content
 
     COMMAND = os.environ["SHELL"]
     # COMMAND = "python test_input.py"
@@ -217,7 +218,7 @@ if __name__ == "__main__":
 
         def on_mount(self) -> None:
             command_pane = self.query_one(CommandPane)
-            command_pane.border_title = COMMAND
+            command_pane.border_title = Content(COMMAND)
             command_pane.execute(COMMAND)
 
     app = CommandApp()

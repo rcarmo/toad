@@ -4,6 +4,7 @@ from textual.app import ComposeResult
 from textual import on, work
 from textual import containers
 from textual import getters
+from textual.content import Content
 from textual.screen import ModalScreen
 from textual import widgets
 from textual.widget import Widget
@@ -63,7 +64,7 @@ class ActionModal(ModalScreen):
 
     def on_mount(self) -> None:
         self.ok_button.loading = True
-        self.command_pane.border_title = self._title
+        self.command_pane.border_title = Content(self._title)
 
         self.run_command()
 
