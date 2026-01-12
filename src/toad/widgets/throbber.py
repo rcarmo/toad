@@ -1,5 +1,5 @@
+from functools import lru_cache
 from time import monotonic
-from typing import Callable
 
 from rich.segment import Segment
 from rich.style import Style as RichStyle
@@ -39,6 +39,23 @@ class ThrobberVisual(Visual):
 
     gradient = Gradient.from_colors(*[Color.parse(color) for color in COLORS])
 
+    @lru_cache(maxsize=8)
+    def make_segments(self, style: Style, width: int) -> list[Segment]:
+        gradient = self.gradient
+        background = style.rich_style.bgcolor
+        segments = [
+            Segment(
+                "━",
+                RichStyle.from_color(
+                    gradient.get_rich_color((offset / width)),
+                    background,
+                ),
+            )
+            for offset in range(width)
+        ]
+
+        return segments
+
     def render_strips(
         self, width: int, height: int | None, style: Style, options: RenderOptions
     ) -> list[Strip]:
@@ -55,25 +72,10 @@ class ThrobberVisual(Visual):
         """
 
         time = monotonic()
-        gradient = self.gradient
-        background = style.rich_style.bgcolor
-
-        strips = [
-            Strip(
-                [
-                    Segment(
-                        "━",
-                        RichStyle.from_color(
-                            gradient.get_rich_color((offset / width - time) % 1.0),
-                            background,
-                        ),
-                    )
-                    for offset in range(width)
-                ],
-                width,
-            )
-        ]
-        return strips
+        segments = self.make_segments(style, width)
+        offset = int(1 - (time % 1.0) * width)
+        segments = segments[offset:] + segments[:offset]
+        return [Strip(segments, cell_length=width)]
 
     def get_optimal_width(self, rules: RulesMap, container_width: int) -> int:
         return container_width

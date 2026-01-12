@@ -11,13 +11,14 @@ from collections import deque
 from dataclasses import dataclass
 import struct
 import termios
-from typing import Mapping
+from typing import Iterable, Mapping
 
 from textual.content import Content
 from textual.reactive import var
 
 from toad.shell_read import shell_read
 from toad.widgets.terminal import Terminal
+from toad.menus import MenuItem
 
 
 @dataclass
@@ -217,6 +218,9 @@ class TerminalTool(Terminal):
         )
 
         os.close(slave)
+
+        self.set_write_to_stdin(self.write_stdin)
+
         BUFFER_SIZE = 64 * 1024 * 2
         reader = asyncio.StreamReader(BUFFER_SIZE)
         protocol = asyncio.StreamReaderProtocol(reader)
@@ -256,6 +260,15 @@ class TerminalTool(Terminal):
             self.border_title = Content.assemble(
                 f"{command} [{return_code}]",
             )
+
+    async def write_stdin(self, text: str | bytes, hide_echo: bool = False) -> int:
+        if self._shell_fd is None:
+            return 0
+        text_bytes = text.encode("utf-8", "ignore") if isinstance(text, str) else text
+        try:
+            return await asyncio.to_thread(os.write, self._shell_fd, text_bytes)
+        except OSError:
+            return 0
 
     def _record_output(self, data: bytes) -> None:
         """Keep a record of the bytes left.

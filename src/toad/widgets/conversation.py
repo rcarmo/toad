@@ -55,6 +55,7 @@ from toad.shell import Shell, CurrentWorkingDirectoryChanged
 from toad.slash_command import SlashCommand
 from toad.protocol import BlockProtocol, MenuProtocol, ExpandProtocol
 from toad.menus import MenuItem
+from toad.widgets.shell_terminal import ShellTerminal
 
 if TYPE_CHECKING:
     from toad.widgets.terminal import Terminal
@@ -503,6 +504,13 @@ class Conversation(containers.Vertical):
         """
         if not terminal.is_finalized:
             self._focusable_terminals.append(terminal)
+
+    @on(ShellTerminal.Interrupt)
+    async def on_shell_terminal_terminate(self, event: ShellTerminal.Terminate) -> None:
+        if not event.teminal.is_finalized:
+            await self.shell.interrupt()
+            self.cursor_offset = -1
+            self.flash("Command interrupted", style="success")
 
     @on(DirectoryChanged)
     def on_directory_changed(self, event: DirectoryChanged) -> None:
@@ -988,6 +996,11 @@ class Conversation(containers.Vertical):
         else:
             raise SkipAction()
 
+    def action_focus_block(self, block_id: str) -> None:
+        self.notify(repr(block_id))
+        with suppress(NoMatches):
+            self.query_one(f"#{block_id}").focus()
+
     @work
     @on(acp_messages.CreateTerminal)
     async def on_acp_create_terminal(self, message: acp_messages.CreateTerminal):
@@ -1429,7 +1442,6 @@ class Conversation(containers.Vertical):
         Returns:
             A new (mounted) Terminal widget.
         """
-        from toad.widgets.shell_terminal import ShellTerminal
 
         if (terminal := self._terminal) is not None:
             if terminal.state.buffer.is_blank:
@@ -1441,6 +1453,7 @@ class Conversation(containers.Vertical):
         terminal_width, terminal_height = self.get_terminal_dimensions()
         terminal = ShellTerminal(
             f"terminal #{self._terminal_count}",
+            id=f"shell-terminal-{self._terminal_count}",
             size=(terminal_width, terminal_height),
             get_terminal_dimensions=self.get_terminal_dimensions,
         )

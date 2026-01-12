@@ -97,7 +97,7 @@ SCHEMA: list[SchemaDict] = [
             {
                 "key": "throbber",
                 "title": "Thinking animation",
-                "help": "Animation to show while the agent is busy",
+                "help": "Animation to show while waiting for the agent to respond",
                 "type": "choices",
                 "default": "quotes",
                 "choices": [

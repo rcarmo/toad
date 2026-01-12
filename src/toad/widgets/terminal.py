@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from time import monotonic
-from typing import Awaitable, Callable
+from typing import Awaitable, Callable, Iterable
 
 from textual.cache import LRUCache
 
@@ -18,6 +18,7 @@ from textual.strip import Strip
 from textual.timer import Timer
 
 from toad import ansi
+from toad.menus import MenuItem
 
 
 # Time required to double tab escape
