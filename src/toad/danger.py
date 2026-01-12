@@ -292,6 +292,7 @@ def analyze(
                 parts = node.parts[1:]
             else:
                 parts = node.parts
+                command_name = ""
 
             if not parts:
                 yield CommandAtom(command_name, level, root_path, node.pos)

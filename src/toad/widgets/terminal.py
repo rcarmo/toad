@@ -61,6 +61,16 @@ Tap escape *twice* to exit.
         def control(self) -> Terminal:
             return self.terminal
 
+    @dataclass
+    class LongRunning(Message):
+        """Terminal enabled or disabled alternate screen."""
+
+        terminal: Terminal
+
+        @property
+        def control(self) -> Terminal:
+            return self.terminal
+
     def __init__(
         self,
         name: str | None = None,
@@ -102,6 +112,8 @@ Tap escape *twice* to exit.
         self._alternate_screen: bool = False
         self._terminal_render_cache: LRUCache[tuple, Strip] = LRUCache(1024)
         self._write_to_stdin: Callable[[str], Awaitable] | None = None
+        self._write_count = 0
+        self._long_running_timer: Timer | None = None
 
     @property
     def is_finalized(self) -> bool:
@@ -155,6 +167,8 @@ Tap escape *twice* to exit.
         Adds the TCSS class `-finalize`
         """
         if not self._finalized:
+            if self._long_running_timer is not None:
+                self._long_running_timer.stop()
             self._finalized = True
             self.state.show_cursor = False
             self.add_class("-finalized")
@@ -162,7 +176,10 @@ Tap escape *twice* to exit.
             self.refresh()
             self.blur()
             self.post_message(self.Finalized(self))
-            self.state.remove_trailing_blank_lines_from_scrollback()
+
+            # self.state.remove_trailing_blank_lines_from_scrollback()
+            if not self.state.buffer.height:
+                self.remove()
 
     def allow_focus(self) -> bool:
         """Prohibit focus when the terminal is finalized and couldn't accept input."""
@@ -234,6 +251,15 @@ Tap escape *twice* to exit.
         Returns:
             `True` if the state visuals changed, `False` if no visual change.
         """
+        if self._write_count and self._long_running_timer is None:
+
+            def warn_long_run():
+                """Warn about a long running command."""
+                self.post_message(self.LongRunning(self))
+
+            self._long_running_timer = self.set_timer(2, warn_long_run)
+        self._write_count += 1
+
         scrollback_delta, alternate_delta = await self.state.write(
             text, hide_output=hide_output
         )
@@ -274,7 +300,7 @@ Tap escape *twice* to exit.
             self.refresh()
         else:
             window_width = self.region.width
-            scrollback_height = self.state.scrollback_buffer.line_count
+            scrollback_height = self.state.scrollback_buffer.height
             if scrollback_delta is None:
                 self.refresh(Region(0, 0, window_width, scrollback_height))
             else:
@@ -284,7 +310,7 @@ Tap escape *twice* to exit.
                 ]
                 if refresh_lines:
                     self.refresh(*refresh_lines)
-            alternate_height = self.state.alternate_buffer.line_count
+            alternate_height = self.state.alternate_buffer.height
             if alternate_delta is None:
                 self.refresh(
                     Region(
@@ -325,8 +351,8 @@ Tap escape *twice* to exit.
         buffer = state.scrollback_buffer
         buffer_offset = 0
         # If alternate screen is active place it (virtually) at the end
-        if y >= len(buffer.folded_lines) and state.alternate_screen:
-            buffer_offset = len(buffer.folded_lines)
+        if y >= buffer.height and state.alternate_screen:
+            buffer_offset = buffer.height
             buffer = state.alternate_buffer
         # Get the folded line, which as a one to one relationship with y
         try:
@@ -500,8 +526,10 @@ Tap escape *twice* to exit.
                 await self.write_process_stdin(self._encode_mouse_event_sgr(event))
 
     async def on_paste(self, event: events.Paste) -> None:
-        for character in event.text:
-            await self.write_process_stdin(character)
+        if self.state.bracketed_paste:
+            await self.write_process_stdin(f"\x1b[200~{event.text}\x1b[201~")
+        else:
+            await self.write_process_stdin(event.text)
 
     async def write_process_stdin(self, input: str) -> None:
         if self._write_to_stdin is not None:

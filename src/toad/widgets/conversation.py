@@ -196,7 +196,7 @@ class Contents(containers.VerticalGroup, can_focus=False):
     ) -> list[WidgetPlacement]:
         if placements:
             last_placement = placements[-1]
-            top, right, bottom, left = last_placement.margin
+            top, right, _bottom, left = last_placement.margin
             placements[-1] = last_placement._replace(
                 margin=Spacing(top, right, 0, left)
             )
@@ -214,7 +214,11 @@ class ContentsGrid(containers.Grid):
 class CursorContainer(containers.Vertical):
     def render_lines(self, crop: Region) -> list[Strip]:
         rich_style = self.visual_style.rich_style
-        return [Strip([Segment("▌", rich_style)], cell_length=1)] * crop.height
+        strips = [Strip([Segment("▌", rich_style)], cell_length=1)] * crop.height
+        if crop.y == 0 and strips:
+            strips[0] = Strip([Segment(" ", rich_style)], cell_length=1)
+
+        return strips
 
 
 class Window(containers.VerticalScroll):
@@ -517,6 +521,15 @@ class Conversation(containers.Vertical):
             self.prompt.project_directory_updated()
             self._directory_changed = False
             self.post_message(messages.ProjectDirectoryUpdated())
+
+    @on(Terminal.LongRunning)
+    def on_terminal_long_running(self, event: Terminal.LongRunning) -> None:
+        if (
+            not event.terminal.is_finalized
+            and not event.terminal.has_focus
+            and not event.terminal.state.buffer.is_blank
+        ):
+            self.flash("Press [b]ctrl+f[/b] to focus command", style="default")
 
     @on(Terminal.AlternateScreenChanged)
     def on_terminal_alternate_screen_(
@@ -1350,8 +1363,8 @@ class Conversation(containers.Vertical):
         if not self.contents.is_attached:
             return widget
 
-        if not any(child.display for child in self.contents.children):
-            widget.add_class("-first")
+        # if not any(child.display for child in self.contents.children):
+        #     widget.add_class("-first")
         await self.contents.mount(widget)
 
         widget.loading = loading
@@ -1448,7 +1461,7 @@ class Conversation(containers.Vertical):
             16,
             (self.window.size.width - 2 - self.window.styles.scrollbar_size_vertical),
         )
-        terminal_height = max(8, self.window.scrollable_content_region.height - 4)
+        terminal_height = max(8, self.window.scrollable_content_region.height)
         return terminal_width, terminal_height
 
     @property

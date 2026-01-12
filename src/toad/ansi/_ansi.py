@@ -234,9 +234,9 @@ class ANSICursor(NamedTuple):
         Returns:
             A pair of offsets (inclusive).
         """
-        assert self.clear_range is not None, (
-            "Only call this if the replace attribute has a value"
-        )
+        assert (
+            self.clear_range is not None
+        ), "Only call this if the replace attribute has a value"
         replace_start, replace_end = self.clear_range
         if replace_start is None:
             replace_start = cursor_offset
@@ -798,18 +798,18 @@ class Buffer:
     def height(self) -> int:
         """Height of the buffer (number of folded lines)."""
         height = len(self.folded_lines)
+        if (
+            height == 1
+            and not self.lines[-1].content.plain
+            and self.name == "scrollback"
+        ):
+            height -= 1
         return height
 
     @property
     def last_line_no(self) -> int:
         """Index of last lines."""
         return len(self.lines) - 1
-
-    @property
-    def unfolded_line(self) -> int:
-        """THh unfolded line index under the cursor."""
-        cursor_folded_line = self.folded_lines[self.cursor_line]
-        return cursor_folded_line.line_no
 
     @property
     def cursor(self) -> tuple[int, int]:
@@ -1029,11 +1029,11 @@ class TerminalState:
 
     @property
     def screen_start_line_no(self) -> int:
-        return self.buffer.line_count - self.height
+        return max(0, self.scrollback_buffer.height - self.height)
 
     @property
     def screen_end_line_no(self) -> int:
-        return self.buffer.line_count
+        return self.buffer.height
 
     @property
     def updates(self) -> int:
@@ -1248,6 +1248,8 @@ class TerminalState:
         buffer = self.buffer
         margin_top, margin_bottom = buffer.scroll_margin.get_line_range(self.height)
 
+        gutter_lines = max(0, buffer.height - self.height)
+
         if direction == -1:
             # up (first in test)
             for line_no in range(margin_top, margin_bottom + 1):
@@ -1256,14 +1258,16 @@ class TerminalState:
                 copy_style = NULL_STYLE
                 if copy_line_no <= margin_bottom:
                     try:
-                        copy_line = buffer.lines[copy_line_no]
+                        copy_line = buffer.lines[copy_line_no + gutter_lines]
                     except IndexError:
                         pass
                     else:
                         copy_content = copy_line.content
                         copy_style = copy_line.style
 
-                self.update_line(buffer, line_no, copy_content, copy_style)
+                self.update_line(
+                    buffer, line_no + gutter_lines, copy_content, copy_style
+                )
         else:
             # down
             for line_no in reversed(range(margin_top, margin_bottom + 1)):
@@ -1272,13 +1276,15 @@ class TerminalState:
                 copy_style = NULL_STYLE
                 if copy_line_no >= margin_top:
                     try:
-                        copy_line = buffer.lines[copy_line_no]
+                        copy_line = buffer.lines[copy_line_no + gutter_lines]
                     except IndexError:
                         pass
                     else:
                         copy_content = copy_line.content
                         copy_style = copy_line.style
-                self.update_line(buffer, line_no, copy_content, copy_style)
+                self.update_line(
+                    buffer, line_no + gutter_lines, copy_content, copy_style
+                )
 
     @classmethod
     def _expand_content(cls, content: Content, offset: int, style: Style) -> Content:
@@ -1358,7 +1364,6 @@ class TerminalState:
                 update_background,
                 auto_scroll,
             ):
-                # print(repr(ansi_command))
                 buffer = self.buffer
                 folded_lines = buffer.folded_lines
                 while buffer.cursor_line >= len(folded_lines):
@@ -1368,13 +1373,15 @@ class TerminalState:
                     margins = buffer.scroll_margin.get_line_range(self.height)
                     margin_top, margin_bottom = margins
 
+                    screen_cursor_line = buffer.cursor_line - self.screen_start_line_no
+
                     if (
-                        buffer.cursor_line >= margin_top
-                        and buffer.cursor_line <= margin_bottom
+                        screen_cursor_line >= margin_top
+                        and screen_cursor_line <= margin_bottom
                     ):
                         start_line_no = self.screen_start_line_no
-                        start_line_no = 0
-                        scroll_cursor = buffer.cursor_line + delta_y
+
+                        scroll_cursor = screen_cursor_line + delta_y
                         if scroll_cursor > (start_line_no + margin_bottom):
                             self.scroll_buffer(-1, 1)
                             return
@@ -1440,11 +1447,18 @@ class TerminalState:
                 current_cursor_line = buffer.cursor_line
                 if delta_y is not None:
                     buffer.update_line(buffer.cursor_line)
-                    buffer.cursor_line = max(0, buffer.cursor_line + delta_y)
+                    buffer.cursor_line = max(
+                        self.screen_start_line_no, buffer.cursor_line + delta_y
+                    )
                     buffer.update_line(buffer.cursor_line)
                 if absolute_y is not None:
                     buffer.update_line(buffer.cursor_line)
-                    buffer.cursor_line = max(0, absolute_y)
+                    if buffer.name == "scrollback":
+                        buffer.cursor_line = self.screen_start_line_no + max(
+                            0, absolute_y
+                        )
+                    else:
+                        buffer.cursor_line = max(0, absolute_y)
                     buffer.update_line(buffer.cursor_line)
 
                 if current_cursor_line != buffer.cursor_line:
