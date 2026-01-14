@@ -4,12 +4,13 @@
 
 
 Markdown {
-    layout: stream;
+    layout: stream;    
 }
 
 LoadingIndicator {
     background: transparent;
 }
+
 
 
 
