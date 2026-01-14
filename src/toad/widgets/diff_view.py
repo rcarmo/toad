@@ -343,9 +343,15 @@ class DiffView(containers.VerticalGroup):
                 code_b_spans: list[Span] = []
 
                 for tag, i1, i2, j1, j2 in sequence_matcher.get_opcodes():
-                    if tag in {"delete", "replace"}:
+                    if (
+                        tag in {"delete", "replace"}
+                        and "\n" not in code_a.plain[i1 : i2 + 1]
+                    ):
                         code_a_spans.append(Span(i1, i2, "on $error 40%"))
-                    if tag in {"insert", "replace"}:
+                    if (
+                        tag in {"insert", "replace"}
+                        and "\n" not in code_b.plain[j1 : j2 + 1]
+                    ):
                         code_b_spans.append(Span(j1, j2, "on $success 40%"))
 
                 code_a = code_a.add_spans(code_a_spans)

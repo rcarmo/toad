@@ -474,11 +474,8 @@ Prompt {
         #title {
             width: 1fr;            
         }
-        height: auto;        
+        height: auto;                
         
-        #title {
-            margin: 0;
-        }
 
         #contents {
             margin-top: 0;
@@ -491,6 +488,9 @@ Prompt {
                 .diff-group {                    
                     margin-bottom: 0;
                 }
+            }
+            #title {
+                margin: 0;
             }
             & > * {                
                 # height: 0;

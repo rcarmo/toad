@@ -244,10 +244,10 @@ class Question(containers.VerticalGroup, can_focus=True):
         self.refresh(recompose=True, layout=True)
 
     def compose(self) -> ComposeResult:
-        if self.title:
-            yield widgets.Label(self.title, id="title", markup=False)
 
         with containers.VerticalGroup(id="contents"):
+            if self.title:
+                yield widgets.Label(self.title, id="title", markup=False)
             if self._get_content is not None:
                 yield self._get_content()
 
