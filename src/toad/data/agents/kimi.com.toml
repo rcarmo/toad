@@ -30,6 +30,6 @@ command = "uv tool install kimi-cli --no-cache"
 description = "Install Kimi CLI"
 
 
-[actions."*".upgrade]
+[actions."*".update]
 command = "uv tool upgrade kimi-cli --no-cache"
 description = "Upgrade Kimi CLI"

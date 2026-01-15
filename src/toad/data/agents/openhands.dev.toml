@@ -39,3 +39,7 @@ command = "uv tool install openhands -U --python 3.12 && openhands login"
 bootstrap_uv = true
 description = "Install OpenHands"
 
+[actions."*".update]
+command = "uv tool install openhands -U --python 3.12"
+bootstrap_uv = true
+description = "Update OpenHands"
