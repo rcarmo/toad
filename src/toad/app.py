@@ -1,6 +1,7 @@
 from importlib.resources import files
 from datetime import datetime, timezone
 from functools import cached_property
+import os
 from pathlib import Path
 import platform
 import json
@@ -405,8 +406,15 @@ class ToadApp(App, inherit_bindings=False):
         POSTHOG_HOST = "https://us.i.posthog.com"
         POSTHOG_EVENT_URL = f"{POSTHOG_HOST}/i/v0/e/"
         timestamp = datetime.now(timezone.utc).isoformat()
+        term_program = os.environ.get("TERM_PROGRAM", "unknown")
+        width, height = self.size
 
-        event_properties = {"toad_version": self.version} | properties
+        event_properties = {
+            "toad_version": self.version,
+            "term_program": term_program,
+            "term_width": width,
+            "term_height": height,
+        } | properties
         body_json = {
             "api_key": POSTHOG_API_KEY,
             "event": event_name,
