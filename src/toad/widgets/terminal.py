@@ -526,10 +526,13 @@ Tap escape *twice* to exit.
                 await self.write_process_stdin(self._encode_mouse_event_sgr(event))
 
     async def on_paste(self, event: events.Paste) -> None:
+        await self.paste(event.text)
+
+    async def paste(self, text: str) -> None:
         if self.state.bracketed_paste:
-            await self.write_process_stdin(f"\x1b[200~{event.text}\x1b[201~")
+            await self.write_process_stdin(f"\x1b[200~{text}\x1b[201~")
         else:
-            await self.write_process_stdin(event.text)
+            await self.write_process_stdin(text)
 
     async def write_process_stdin(self, input: str) -> None:
         if self._write_to_stdin is not None:

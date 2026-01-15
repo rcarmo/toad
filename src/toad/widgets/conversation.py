@@ -758,9 +758,14 @@ class Conversation(containers.Vertical):
         if not event.body.strip():
             return
         if event.shell:
-            await self.shell_history.append(event.body)
-            self.shell_history_index = 0
-            await self.post_shell(event.body)
+            if await self.shell.is_busy():
+                if self.shell.terminal is not None:
+                    self.shell.terminal.focus(scroll_visible=False)
+                await self.shell.send_input(event.body, paste=True)
+            else:
+                await self.shell_history.append(event.body)
+                self.shell_history_index = 0
+                await self.post_shell(event.body)
         elif text := event.body.strip():
             await self.prompt_history.append(event.body)
             self.prompt_history_index = 0

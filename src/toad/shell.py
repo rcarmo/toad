@@ -81,9 +81,41 @@ class Shell:
         self._hide_output = hide_start
         """Hide all output."""
 
+        self._pid: int | None = None
+        """Shell process id"""
+
     @property
     def is_finished(self) -> bool:
         return self._finished
+
+    def _is_busy(self) -> bool:
+        """Check if the shell is busy.
+
+        Called from a thread by `is_busy`.
+
+        Returns:
+            `True` if a command is running, or `False` if the shell is waiting for input.
+
+        """
+        if self._pid is None:
+            return False
+        import psutil
+
+        try:
+            shell_process = psutil.Process(self._pid)
+            children = shell_process.children(recursive=True)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            return False
+        else:
+            return bool(children)
+
+    async def is_busy(self) -> bool:
+        """Is there a process running in the shell?
+
+        Returns:
+            `True` if a command is running, or `False` if the shell is waiting for input.
+        """
+        return await asyncio.to_thread(self._is_busy)
 
     async def wait_for_ready(self) -> None:
         await self._ready_event.wait()
@@ -105,6 +137,14 @@ class Shell:
 
         get_pwd_command = f"{command};" + r'printf "\e]2025;$(pwd);\e\\"' + "\n"
         await self.write(get_pwd_command, hide_echo=True)
+
+    async def send_input(self, text: str, paste: bool = False) -> None:
+        await self._ready_event.wait()
+        if self.master is None:
+            return
+        if paste and self.terminal is not None and self.terminal.state.bracketed_paste:
+            text = f"\x1b[200~{text}\x1b[201~"
+        await self.write(f"{text}\n", hide_echo=True)
 
     def start(self) -> None:
         assert self._task is None
@@ -185,6 +225,7 @@ class Shell:
                 severity="error",
             )
             return
+        self._pid = _process.pid
 
         os.close(slave)
         BUFFER_SIZE = 64 * 1024
